@@ -43,8 +43,6 @@
 			float2 uvs = IN.uv_MainTex;
 			int TInt = _Time * 20 / _FrameTime;
 			int frame = TInt % _Frames;
-			//uvs[1] = frame/uvs[1];
-			//
 			float uStep = uvs[0] / _UTiles;
 			uvs[0] = uStep + ( ( 1.0 / _UTiles ) * ( frame % _UTiles ) );
 
