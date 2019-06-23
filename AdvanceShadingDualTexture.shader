@@ -13,11 +13,11 @@
 		_Color("Fresnel Color", Color)=(1, 1, 1, 1)
 		_RimValue("Fresnel Retract", Range(0,10)) = 0.5
 
-		_Spread("Edge Sharpness", Range(0,20)) = .5
-		_Pivot("Shade Center",Range(-1,1)) = 0
+		_Spread("Edge Softness", Range(0,1)) = 0
+		_Pivot("Shade Center",Range(0,1)) = .5
+		_SRange("Shard Range",Range(0,1)) = 1.0
 		_Max("Max Brightness", Range(0,1)) = 1.0
 		_Min("Min Brightness",Range(0,1)) = 0.0
-		_SRange("Range of Brightness (From Attenuation)",Range(0,1)) = 1.0
 
 		_SubTex("Tattoo (RGB)", 2D) = "black" {}
 		[Toggle] _TGlow("Tattoo Glow", Float) = 0
@@ -142,17 +142,25 @@
 		fixed4 LightingFlat(SurfaceOutput o, fixed3 lightDir, fixed atten) {
 			//the allowed attenuation range
 			float sRange = _SRange * atten;
+			
 			//the basic light value based on distance, normal and direction.
 			half value = dot (o.Normal, lightDir);
 			//spread causes the hard animatin edge, pivot is where the edge occurs
-			value = value * ( _Spread );
+			if (_Spread > 0){
+				value -= _Pivot;
+				value = value * ( 1 /_Spread );
+				value += _Pivot;
+			} else {
+				if (value < _Pivot ) value = 0;
+				if (value >= _Pivot ) value = 1;
+			}
 			//before adjusting the pivot we need to clamp it from 0-1
 			if (value < 0) value = 0;
 			if (value > 1) value = 1;
 			//apply the attenuation
 			value = value * sRange;
 			//now apply the pivot
-			value = value + _Pivot;
+			//value = value + _Pivot;
 
 			//constrain to visual min/max
 			if ( value < _Min ) value = _Min;
