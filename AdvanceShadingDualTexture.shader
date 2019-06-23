@@ -9,6 +9,7 @@
         [Enum(UnityEngine.Rendering.CullMode)] _CullMode("Cull Mode", Float) = 2                     // "Back"
 
 		_MainTex("Base (RGB)", 2D) = "gray" {}
+		_TCut("Transparent Cutout",Range(0,1)) = 1
 		_Color("Fresnel Color", Color)=(1, 1, 1, 1)
 		_RimValue("Fresnel Retract", Range(0,10)) = 0.5
 
@@ -17,7 +18,7 @@
 		_Max("Max Brightness", Range(0,1)) = 1.0
 		_Min("Min Brightness",Range(0,1)) = 0.0
 
-		_SubTex("Tattoo (RGB)", 2D) = "gray" {}
+		_SubTex("Tattoo (RGB)", 2D) = "black" {}
 		[Toggle] _TGlow("Tattoo Glow", Float) = 0
 		_TGlowColor("Glow Color", Color)=(1, 1, 1, 1)
 		[Toggle] _TRainbow("Rainbow", Float) = 0
@@ -26,20 +27,25 @@
 	}
 
 	SubShader {
-		Tags { "RenderType"="Opaque" "Queue"="Transparent" }
+		Tags { "RenderType"="TransparentCutout" "Queue"="Geometry" "IgnoreProjector"="True"}
 
 		//RenderType[_Mode]
         Blend[_SrcBlend][_DstBlend]
         BlendOp[_BlendOp]
         ZWrite[_ZWrite]
         Cull[_CullMode]
+		AlphaTest Greater[_TCut] //cut amount
 
 		CGPROGRAM
 			
 		/*this is how you control the lighting and alpha. tags does nothing. */
-		//#pragma surface surf NoLighting alpha
-		//#pragma surface surf Flat 
-		#pragma surface surf Flat
+		//Alpha cutout:
+		#pragma surface surf Flat alphatest:_Cutoff
+		//Pure Alpha:
+		//#pragma surface surf Flat alphatest:_Cutoff
+		//Opaque:
+		//#pragma surface surf Flat
+
 		#pragma target 3.0
 		struct Input
 		{
@@ -52,6 +58,7 @@
 			
 		sampler2D _MainTex;
 		float4 _Color;
+		float _TCut;
 		float _Spread;
 		float _Pivot;
 		float _Max;
@@ -68,9 +75,9 @@
 		int rState = 0;
 		Input IN2;
 						
-		void applyTatto(Input IN, inout SurfaceOutput o)
+		void applyTatto(inout SurfaceOutput o)
 		{
-			float2 uv = IN.uv_MainTex;
+			float2 uv = IN2.uv_MainTex;
 			float4 t = tex2D(_SubTex, uv);
 			float ad = 1 - t.a;
 			if ( _TGlow ){
@@ -109,7 +116,6 @@
 			IN2 = IN;
 			float2 uv = IN.uv_MainTex;
 			float4 c = tex2D(_MainTex, uv);
-			o.Alpha = c.a;
 
 			//Fresnel
 			float3 normal = normalize(IN.worldNormal);
@@ -120,7 +126,15 @@
 			rim *= _Color.a;
 			float orim = 1 - rim;
 			o.Albedo = (_Color * rim) + (c * orim);
-			//applyTatto(IN, o);
+			//if (_TGlow) {
+				//applyTatto( o );
+			//}
+			//make sure the end alpha is alpha.
+			if (c.a > _TCut){
+				o.Alpha = c.a;
+			} else {
+				o.Alpha = 0;
+			}
 		}
 		
 		fixed4 LightingFlat(SurfaceOutput o, fixed3 lightDir, fixed atten) {
@@ -131,7 +145,10 @@
 			if ( value > _Max ) value = _Max;
 
 			o.Albedo = o.Albedo * value;
-			applyTatto(IN2,o);
+			if (_TGlow) {
+				applyTatto( o );
+			}
+			
 			return fixed4(o.Albedo, o.Alpha);
 		}
 		ENDCG
