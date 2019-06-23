@@ -28,7 +28,7 @@
 	}
 
 	SubShader {
-		Tags { "RenderType"="TransparentCutout" "Queue"="Geometry" "IgnoreProjector"="True"}
+		Tags { "RenderType"="TransparentCutout" "Queue"="Geometry"}
 
 		//RenderType[_Mode]
         Blend[_SrcBlend][_DstBlend]
@@ -36,18 +36,20 @@
         ZWrite[_ZWrite]
         Cull[_CullMode]
 		AlphaTest Greater[_TCut] //cut amount
-
+		Lighting Off
+		SeparateSpecular Off
 		CGPROGRAM
 			
 		/*this is how you control the lighting and alpha. tags does nothing. */
 		//Alpha cutout:
+		#pragma fwdbase
 		#pragma surface surf Flat alphatest:_Cutoff
 		//Pure Alpha:
 		//#pragma surface surf Flat alphatest:_Cutoff
 		//Opaque:
 		//#pragma surface surf Flat
-
 		#pragma target 3.0
+
 		struct Input
 		{
 			float2 uv_MainTex;
@@ -56,7 +58,8 @@
 			float3 worldPos;
 			float4 screenPos;
 		};
-			
+	
+
 		sampler2D _MainTex;
 		float4 _Color;
 		float _TCut;
@@ -111,6 +114,7 @@
 				t.rgb = (t.rgb * igv) + (_TGlowColor.rgb * gv);
 			}
 			o.Albedo = ( o.Albedo * ad ) + (t * t.a);
+			o.Specular = (1.0,1.0,1.0,1.0);
 		}
 
 		void surf(Input IN, inout SurfaceOutput o)
@@ -136,6 +140,10 @@
 			} else {
 				o.Alpha = 0;
 			}
+		}
+		
+		void vert (inout appdata_base v) {
+
 		}
 		
 		fixed4 LightingFlat(SurfaceOutput o, fixed3 lightDir, fixed atten) {
@@ -185,5 +193,5 @@
 		}
 		ENDCG
 	} 
-	FallBack "Diffuse"
+	//FallBack "Diffuse"
 }
