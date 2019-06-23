@@ -77,7 +77,7 @@
 		int rState = 0;
 		Input IN2;
 						
-		void applyTatto(inout SurfaceOutput o)
+		void applyTattoo(inout SurfaceOutput o)
 		{
 			float2 uv = IN2.uv_MainTex;
 			float4 t = tex2D(_SubTex, uv);
@@ -116,6 +116,7 @@
 		void surf(Input IN, inout SurfaceOutput o)
 		{
 			IN2 = IN;
+
 			float2 uv = IN.uv_MainTex;
 			float4 c = tex2D(_MainTex, uv);
 
@@ -128,9 +129,7 @@
 			rim *= _Color.a;
 			float orim = 1 - rim;
 			o.Albedo = (_Color * rim) + (c * orim);
-			//if (_TGlow) {
-				//applyTatto( o );
-			//}
+
 			//make sure the end alpha is alpha.
 			if (c.a > _TCut){
 				o.Alpha = c.a;
@@ -140,38 +139,46 @@
 		}
 		
 		fixed4 LightingFlat(SurfaceOutput o, fixed3 lightDir, fixed atten) {
+			//if it's not meant to glow, calculate before shading.
+			if (!_TGlow) {
+				applyTattoo( o );
+			}
+
 			//the allowed attenuation range
 			float sRange = _SRange * atten;
 			
 			//the basic light value based on distance, normal and direction.
 			half value = dot (o.Normal, lightDir);
-			//spread causes the hard animatin edge, pivot is where the edge occurs
+			//spread causes the hard animation edge, pivot is where the edge occurs
 			if (_Spread > 0){
-				value -= _Pivot;
-				value = value * ( 1 /_Spread );
-				value += _Pivot;
-			} else {
+				value -= _Pivot;				//spread the value from the pivot
+				value = value * ( 1 /_Spread );	//spread them to create a hard edge
+				value += _Pivot;				//move the value back to the pivot
+			} else { //if the spread is 0, so we don't divide by 0, let's just split compare.
 				if (value < _Pivot ) value = 0;
 				if (value >= _Pivot ) value = 1;
 			}
-			//before adjusting the pivot we need to clamp it from 0-1
+			//before applying the attenuation, we need to clamp it from 0-1
 			if (value < 0) value = 0;
 			if (value > 1) value = 1;
+
 			//apply the attenuation
 			value = value * sRange;
-			//now apply the pivot
-			//value = value + _Pivot;
 
-			//constrain to visual min/max
+			//raise by allowed range
+			value += (atten-sRange);
+
+			//constrain to visual min/max 
+			//This is for completely black or fully bright areas.
 			if ( value < _Min ) value = _Min;
 			if ( value > _Max ) value = _Max;
-
-			value += (atten-sRange);
 			
-			//apply it the color
+			//apply the light color
 			o.Albedo = o.Albedo * _LightColor0.rgb * value;
+
+			//trigger another pass to handle 2nd layer, if marked to glow.
 			if (_TGlow) {
-				applyTatto( o );
+				applyTattoo( o );
 			}
 			
 			return fixed4(o.Albedo, o.Alpha);
