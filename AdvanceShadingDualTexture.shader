@@ -38,12 +38,13 @@
 		AlphaTest Greater[_TCut] //cut amount
 		Lighting Off
 		SeparateSpecular Off
+
 		CGPROGRAM
+		#include "UnityLightingCommon.cginc"
 			
 		/*this is how you control the lighting and alpha. tags does nothing. */
 		//Alpha cutout:
-		#pragma fwdbase
-		#pragma surface surf Flat alphatest:_Cutoff
+		#pragma surface surf Flat novertexlights alphatest:_Cutoff finalcolor:final
 		//Pure Alpha:
 		//#pragma surface surf Flat alphatest:_Cutoff
 		//Opaque:
@@ -58,7 +59,6 @@
 			float3 worldPos;
 			float4 screenPos;
 		};
-	
 
 		sampler2D _MainTex;
 		float4 _Color;
@@ -142,10 +142,19 @@
 			}
 		}
 		
-		void vert (inout appdata_base v) {
-
+		void vert (inout appdata_base v, out Input o) {
+			
 		}
-		
+
+		void final(Input IN, SurfaceOutput o, inout fixed4 color) {
+			 
+        }
+
+		half4 LightingFlat_GI( inout SurfaceOutput s, UnityGIInput data, inout UnityGI gi )
+		{
+			return 1.0;
+		}
+
 		fixed4 LightingFlat(SurfaceOutput o, fixed3 lightDir, fixed atten) {
 			//if it's not meant to glow, calculate before shading.
 			if (!_TGlow) {
@@ -181,8 +190,15 @@
 			if ( value < _Min ) value = _Min;
 			if ( value > _Max ) value = _Max;
 			
-			//apply the light color
-			o.Albedo = o.Albedo * _LightColor0.rgb * value;
+			//o.Albedo = o.Albedo * value * _LightColor0;
+			o.Albedo = o.Albedo * value/2;
+			
+			//TODO:
+			/*
+			There is an issue here with _LightColor0 and becoming 0 when no lights are present.
+			for now just ignoring light color :(
+			*/
+			
 
 			//trigger another pass to handle 2nd layer, if marked to glow.
 			if (_TGlow) {
