@@ -197,7 +197,8 @@
 			if ( value > _Max ) value = _Max;
 			
 			half3 ambColor = ShadeSH9(ambientDir);
-			half3 lightColor = max(ambColor, _LightColor0.rgb);
+			half3 lightColor = ambColor + _LightColor0.rgb;
+			lightColor = min(lightColor, normalize(lightColor));
 			o.Albedo = o.Albedo * value * lightColor;
 
 			//trigger another pass to handle 2nd layer, if marked to glow.
