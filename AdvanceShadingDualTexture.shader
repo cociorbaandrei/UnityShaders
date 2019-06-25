@@ -5,7 +5,6 @@
         [Enum(UnityEngine.Rendering.BlendMode)] _SrcBlend("Source Blend", Float) = 1                 // "One"
         [Enum(UnityEngine.Rendering.BlendMode)] _DstBlend("Destination Blend", Float) = 0            // "Zero"
         [Enum(UnityEngine.Rendering.BlendOp)] _BlendOp("Blend Operation", Float) = 0                 // "Add"
-        [Enum(DepthWrite)] _ZWrite("Depth Write", Float) = 1                                         // "On"
         [Enum(UnityEngine.Rendering.CullMode)] _CullMode("Cull Mode", Float) = 2                     // "Back"
 
 		_MainTex("Base (RGB)", 2D) = "gray" {}
@@ -33,7 +32,6 @@
 		//RenderType[_Mode]
         Blend[_SrcBlend][_DstBlend]
         BlendOp[_BlendOp]
-        ZWrite[_ZWrite]
         Cull[_CullMode]
 		AlphaTest Greater[_TCut] //cut amount
 		Lighting Off
@@ -165,7 +163,15 @@
 			float sRange = _SRange * atten;
 			
 			//the basic light value based on distance, normal and direction.
-			half value = dot (o.Normal, lightDir);
+			//get the ambient direction & light amount
+			float4 ambientDir = float4(Unity_SafeNormalize(unity_SHAr.xyz + unity_SHAg.xyz + unity_SHAb.xyz), 1.0);
+			float ambValue = dot(o.Normal, ambientDir);
+			//get the non ambient amount
+			half nonAmbValue = dot (o.Normal, lightDir);
+			//take whichever produces more.
+			half value = max(ambValue,nonAmbValue);
+			
+
 			//spread causes the hard animation edge, pivot is where the edge occurs
 			if (_Spread > 0){
 				value -= _Pivot;				//spread the value from the pivot
@@ -190,15 +196,9 @@
 			if ( value < _Min ) value = _Min;
 			if ( value > _Max ) value = _Max;
 			
-			//o.Albedo = o.Albedo * value * _LightColor0;
-			o.Albedo = o.Albedo * value/2;
-			
-			//TODO:
-			/*
-			There is an issue here with _LightColor0 and becoming 0 when no lights are present.
-			for now just ignoring light color :(
-			*/
-			
+			half3 ambColor = ShadeSH9(ambientDir);
+			half3 lightColor = max(ambColor, _LightColor0.rgb);
+			o.Albedo = o.Albedo * value * lightColor;
 
 			//trigger another pass to handle 2nd layer, if marked to glow.
 			if (_TGlow) {
