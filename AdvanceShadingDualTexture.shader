@@ -27,7 +27,7 @@
 	}
 
 	SubShader {
-		Tags { "RenderType"="TransparentCutout" "Queue"="Geometry"}
+		Tags { "RenderType"="TransparentCutout" "Queue"="Geometry+1"}
 
 		//RenderType[_Mode]
         Blend[_SrcBlend][_DstBlend]
