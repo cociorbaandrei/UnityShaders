@@ -8,6 +8,9 @@
 		_VTiles("Rows", Int) = 1
 		_Frames("Total Frames", Int) = 1
 		_FrameTime("Length of Time to Show Each Frame in Seconds",float) = 1.0
+		[Toggle] _TopDown("Top Down",float) = 0
+		[Toggle] _Reverse("Reverse",float) = 0
+		
 	}
 
 	SubShader {
@@ -28,6 +31,8 @@
 		float _FrameTime;
 		float4 _Color;
 		float _TransRange;
+		float _Reverse;
+		float _TopDown;
 			
 		struct Input
 		{
@@ -40,16 +45,29 @@
 
 		void surf(Input IN, inout SurfaceOutput o)
 		{
+			//frame
 			float2 uvs = IN.uv_MainTex;
 			int TInt = _Time * 20 / _FrameTime;
 			int frame = TInt % _Frames;
+			if (_Reverse == 1){
+				frame = _Frames - frame - 1;
+			}
+			
+			//column
 			float uStep = uvs[0] / _UTiles;
-			uvs[0] = uStep + ( ( 1.0 / _UTiles ) * ( frame % _UTiles ) );
-
-			int row = frame / _VTiles;
+			float frameWidth = 1.0 / _UTiles;
+			uvs[0] = uStep + ( frameWidth * ( frame % _UTiles ) );
+			
+			//row
+			int row = frame / _UTiles;
+			if ( _TopDown == 1 ){
+				row = _VTiles - row - 1;
+			}
 			float vStep = uvs[1] / _VTiles;
-			uvs[1] = vStep + row * (1.0/_VTiles);
+			float frameHeight = 1.0/_VTiles;
+			uvs[1] = vStep + row * frameHeight;
 
+			//sample it
 			float4 c = tex2D(_MainTex, uvs);
 			o.Albedo = c.rgb;
 			if ( c[0] > _Color[0]-_TransRange && c[0] < _Color[0]+_TransRange &&
@@ -60,7 +78,6 @@
 			} else {
 				o.Alpha = c.a;
 			}
-			
 		}
 
 		fixed4 LightingNoLighting(SurfaceOutput s, fixed3 lightDir, fixed atten) {
