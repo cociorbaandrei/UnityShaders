@@ -7,17 +7,20 @@
         [Enum(UnityEngine.Rendering.BlendOp)] _BlendOp("Blend Operation", Float) = 0                 // "Add"
         [Enum(UnityEngine.Rendering.CullMode)] _CullMode("Cull Mode", Float) = 2                     // "Back"
 
+		[space]
 		_MainTex("Base (RGB)", 2D) = "gray" {}
 		_TCut("Transparent Cutout",Range(0,1)) = 1
 		_Color("Fresnel Color", Color)=(1, 1, 1, 1)
 		_RimValue("Fresnel Retract", Range(0,10)) = 0.5
 
+		[space]
 		_Spread("Edge Softness", Range(0,1)) = 0
 		_Pivot("Shade Center",Range(0,1)) = .5
 		_SRange("Shard Range",Range(0,1)) = 1.0
 		_Max("Max Brightness", Range(0,1)) = 1.0
 		_Min("Min Brightness",Range(0,1)) = 0.0
 
+		[space]
 		_SubTex("Tattoo (RGB)", 2D) = "black" {}
 		[Toggle] _TGlow("Tattoo Glow", Float) = 0
 		_TGlowColor("Glow Color", Color)=(1, 1, 1, 1)
