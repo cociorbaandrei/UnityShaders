@@ -58,7 +58,8 @@ Shader "Skuld/Ray Marching Fun"
 
 			float DE(float3 position )
 			{
-				position = fmod(position + float3(500, 500, 500), _Size);
+				//position = fmod(position + float3(500, 500, 500), _Size);
+				position = frac(position / _Size) * _Size;
 				float3 center = float3(_Size/2, _Size/2, _Size/2);
 				float distance = sphereDistance(position, center);
 				return distance;
