@@ -6,6 +6,7 @@
         [Enum(UnityEngine.Rendering.BlendMode)] _DstBlend("Destination Blend", Float) = 0            // "Zero"
         [Enum(UnityEngine.Rendering.BlendOp)] _BlendOp("Blend Operation", Float) = 0                 // "Add"
         [Enum(UnityEngine.Rendering.CullMode)] _CullMode("Cull Mode", Float) = 2                     // "Back"
+		[Toggle] _ZWrite("Z-Write",Float) = 1
 
 		[space]
 		_MainTex("Base (RGB)", 2D) = "gray" {}
@@ -39,6 +40,7 @@
 		AlphaTest Greater[_TCut] //cut amount
 		Lighting Off
 		SeparateSpecular Off
+		ZWrite [_ZWrite]
 
 		CGPROGRAM
 		#include "UnityLightingCommon.cginc"

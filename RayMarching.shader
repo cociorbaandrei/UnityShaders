@@ -7,13 +7,19 @@ Shader "Skuld/Ray Marching Fun"
 		_Size("Grid Size",Range(0,10) ) = 1
 		_Radius("Sphere Radius",Range(0,1) ) = 0.1
 		_MinDist("Minimum Distance",Range(0,1)) = .01
+		_TCut("Transparent Cutout",Range(0,1)) = 1
+        [Enum(UnityEngine.Rendering.BlendMode)] _SrcBlend("Source Blend", Float) = 1                 // "One"
+        [Enum(UnityEngine.Rendering.BlendMode)] _DstBlend("Destination Blend", Float) = 0            // "Zero"
+        [Enum(UnityEngine.Rendering.BlendOp)] _BlendOp("Blend Operation", Float) = 0                 // "Add"
 	}
 
 	SubShader {
-		Tags { "RenderType"="Transparent" "Queue"="Transparent-1" }
+		Tags { "RenderType"="TransparentCutout" "Queue"="Transparent-1" }
 		LOD 100
 		Cull Off
-		ZWrite Off
+        Blend[_SrcBlend][_DstBlend]
+        BlendOp[_BlendOp]
+		
 
 		pass {	
 			CGPROGRAM
@@ -35,6 +41,12 @@ Shader "Skuld/Ray Marching Fun"
 				float2 uv : TEXCOORD0;
 			};
 
+			struct fragOutput
+			{
+				half4 color : SV_TARGET;
+				float depth : SV_DEPTH;
+			};
+
 			sampler2D _MainTex;
 			float4 _MainTex_ST;
 			float _Radius;
@@ -42,6 +54,7 @@ Shader "Skuld/Ray Marching Fun"
 			float _Size;
 			float _MinDist;
 			float _AmbOcc;
+			fixed4 noColor;
 
 			v2f vert ( appdata v) {
 				v2f o;
@@ -70,7 +83,6 @@ Shader "Skuld/Ray Marching Fun"
 				float r = shift * 3.1415926535897932384626433832795 / 180;
 				float u = cos(r);
 				float w = sin(r);
-				
 				fixed4 ret;
 				ret.r = (.299+.701 * u+.168 * w)*inColor.r
 					+ (.587-.587 * u+.330 * w)*inColor.g
@@ -82,27 +94,34 @@ Shader "Skuld/Ray Marching Fun"
 					+ (.587-.588 * u-1.05 * w)*inColor.g
 					+ (.114+.886 * u-.203 * w)*inColor.b;	
 				ret[3] = inColor[3];
+				ret.a = min(1.0, 1.5 * saturate(pow(1- shift / 10 / _Steps, _AmbOcc)));
 				return ret;
 			}
 
-			fixed4 raymarch (float3 position, float3 direction, float2 uv)
+			fragOutput raymarch (float3 position, float3 direction, float2 uv)
 			{
+				fragOutput output;
+				
 				fixed4 color = tex2D(_MainTex, uv);
-				fixed4 noColor = (0,0,0,0);
+				noColor = fixed4(1.0,0.0,0.0,0.0);
 
 				for (int i = 0; i < _Steps; i++)
 				{
 					float distance = DE(position);
 					if (distance <= 0.0001) {
-
-						return shiftColor( color * saturate(pow(1- i / _Steps, _AmbOcc)), i*10 );
+						output.color = shiftColor( color * saturate(pow(1- i / _Steps, _AmbOcc)), i*10 );
+						float4 clipPos = UnityWorldToClipPos(position);
+						output.depth = clipPos.z / clipPos.w;
+						return output;
 					}
 					position += direction * distance;
 				}
-				return noColor;
+				output.color = noColor;
+				output.depth = 0;
+				return output;
 			}
 
-			fixed4 frag(v2f input ) : SV_Target
+			fragOutput frag(v2f input )
 			{
 				float2 uv = input.uv;
 				uv[0] = uv[0]+sin(_Time*40);
@@ -114,7 +133,7 @@ Shader "Skuld/Ray Marching Fun"
 				
 				float3 direction = normalize( input.worldPos - _WorldSpaceCameraPos.xyz );
 				
-				return raymarch ( _WorldSpaceCameraPos.xyz, direction, uv);
+				return raymarch ( _WorldSpaceCameraPos, direction, uv);;
 			}
 			ENDCG
 		}
