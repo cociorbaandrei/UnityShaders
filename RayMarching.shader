@@ -94,7 +94,8 @@ Shader "Skuld/Ray Marching Fun"
 					+ (.587-.588 * u-1.05 * w)*inColor.g
 					+ (.114+.886 * u-.203 * w)*inColor.b;	
 				ret[3] = inColor[3];
-				ret.a = min(1.0, 1.5 * saturate(pow(1- shift / 10 / _Steps, _AmbOcc)));
+				ret.a = 1;
+				//ret.a = min(1.0, 1.5 * saturate(pow(1- shift / 10 / _Steps, _AmbOcc)));
 				return ret;
 			}
 
