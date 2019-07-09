@@ -94,7 +94,6 @@ Shader "Skuld/Ray Marching Fun"
 				{
 					float distance = DE(position);
 					if (distance <= 0.0001) {
-
 						return shiftColor( color * saturate(pow(1- i / _Steps, _AmbOcc)), i*10 );
 					}
 					position += direction * distance;
