@@ -64,20 +64,29 @@ Shader "Skuld/Ray Marching Fun"
 				return o;
 			}
 
-			float sphereDistance ( float3 position, float center )
+			float sphereDistance ( float3 position, float3 center )
 			{
 				return length(position - center) - _Radius;
 			}
 
-			float DE(float3 position )
+			float DE(float3 inPosition, v2f input, float i )
 			{
 				//position = fmod(position + float3(500, 500, 500), _Size);
-				position = frac(position / _Size) * _Size;
-				float3 center = float3(_Size/2, _Size/2, _Size/2);
+				float3 position = frac(inPosition / _Size) * _Size;
+				float3 center; 
+				center.z = _Size/2 + sin(_Time*20 + inPosition.x*10)/50;
+				center.x = _Size/2 + sin(_Time*20 + inPosition.z*10)/50;
+				center.y = _Size/2 + cos(_Time*20 + inPosition.y*10)/50;
+				
 				float distance = sphereDistance(position, center);
 				return distance;
 			}
-
+			fixed4 shadeColor( fixed4 inColor, float distance ){
+				float shadeAmt = distance * 10000;
+				fixed4 color = inColor - (inColor * shadeAmt);
+				color[3] = 1;
+				return color;
+			}
 			fixed4 shiftColor( fixed4 inColor, float shift )
 			{
 				float r = shift * 3.1415926535897932384626433832795 / 180;
@@ -99,18 +108,30 @@ Shader "Skuld/Ray Marching Fun"
 				return ret;
 			}
 
-			fragOutput raymarch (float3 position, float3 direction, float2 uv)
+			fragOutput frag(v2f input )
 			{
 				fragOutput output;
+
+				float2 uv = input.uv;
+				uv[0] = uv[0]+sin(_Time*40);
+				if (uv[0] < 0.0) uv[0]++;
+				if (uv[0] > 1.0) uv[0]--;
+				uv[1] = uv[1]+cos(_Time*40);
+				if (uv[1] < 0.0) uv[1]++;
+				if (uv[1] > 1.0) uv[1]--;
+				
+				float3 position = _WorldSpaceCameraPos;
+				float3 direction = normalize( input.worldPos - _WorldSpaceCameraPos.xyz );
 				
 				fixed4 color = tex2D(_MainTex, uv);
 				noColor = fixed4(1.0,0.0,0.0,0.0);
 
 				for (int i = 0; i < _Steps; i++)
 				{
-					float distance = DE(position);
+					float distance = DE(position,input,i);
 					if (distance <= 0.0001) {
 						output.color = shiftColor( color * saturate(pow(1- i / _Steps, _AmbOcc)), i*10 );
+						//output.color = shadeColor( color, distance );
 						float4 clipPos = UnityWorldToClipPos(position);
 						output.depth = clipPos.z / clipPos.w;
 						return output;
@@ -120,21 +141,6 @@ Shader "Skuld/Ray Marching Fun"
 				output.color = noColor;
 				output.depth = 0;
 				return output;
-			}
-
-			fragOutput frag(v2f input )
-			{
-				float2 uv = input.uv;
-				uv[0] = uv[0]+sin(_Time*40);
-				if (uv[0] < 0.0) uv[0]++;
-				if (uv[0] > 1.0) uv[0]--;
-				uv[1] = uv[1]+cos(_Time*40);
-				if (uv[1] < 0.0) uv[1]++;
-				if (uv[1] > 1.0) uv[1]--;
-				
-				float3 direction = normalize( input.worldPos - _WorldSpaceCameraPos.xyz );
-				
-				return raymarch ( _WorldSpaceCameraPos, direction, uv);;
 			}
 			ENDCG
 		}
