@@ -71,7 +71,6 @@ Shader "Skuld/Ray Marching Fun"
 
 			float DE(float3 inPosition, v2f input, float i )
 			{
-				//position = fmod(position + float3(500, 500, 500), _Size);
 				float3 position = frac(inPosition / _Size) * _Size;
 				float3 center; 
 				center.z = _Size/2 + sin(_Time*20 + inPosition.x*10)/50;
@@ -81,8 +80,14 @@ Shader "Skuld/Ray Marching Fun"
 				float distance = sphereDistance(position, center);
 				return distance;
 			}
-			fixed4 shadeColor( fixed4 inColor, float distance ){
-				float shadeAmt = distance * 10000;
+			fixed4 shadeColor( fixed4 inColor, float shadeAmt ){
+				//float shadeAmt = abs(distance) * 5000;
+				/*
+				float shadeAmt = abs(distance)*10;
+				*/
+				shadeAmt = abs(shadeAmt);
+				if (shadeAmt > 1) shadeAmt = 1;
+				if (shadeAmt < 0) shadeAmt = 0;
 				fixed4 color = inColor - (inColor * shadeAmt);
 				color[3] = 1;
 				return color;
@@ -131,9 +136,9 @@ Shader "Skuld/Ray Marching Fun"
 					float distance = DE(position,input,i);
 					if (distance <= 0.0001) {
 						output.color = shiftColor( color * saturate(pow(1- i / _Steps, _AmbOcc)), i*10 );
-						//output.color = shadeColor( color, distance );
 						float4 clipPos = UnityWorldToClipPos(position);
 						output.depth = clipPos.z / clipPos.w;
+						output.color = shadeColor( output.color, (clipPos.z * i) / clipPos.w  );
 						return output;
 					}
 					position += direction * distance;
