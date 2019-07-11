@@ -80,11 +80,9 @@ Shader "Skuld/Ray Marching Fun"
 				float distance = sphereDistance(position, center);
 				return distance;
 			}
+			/*
 			fixed4 shadeColor( fixed4 inColor, float shadeAmt ){
 				//float shadeAmt = abs(distance) * 5000;
-				/*
-				float shadeAmt = abs(distance)*10;
-				*/
 				shadeAmt = abs(shadeAmt);
 				if (shadeAmt > 1) shadeAmt = 1;
 				if (shadeAmt < 0) shadeAmt = 0;
@@ -92,6 +90,7 @@ Shader "Skuld/Ray Marching Fun"
 				color[3] = 1;
 				return color;
 			}
+			*/
 			fixed4 shiftColor( fixed4 inColor, float shift )
 			{
 				float r = shift * 3.1415926535897932384626433832795 / 180;
@@ -138,7 +137,7 @@ Shader "Skuld/Ray Marching Fun"
 						output.color = shiftColor( color * saturate(pow(1- i / _Steps, _AmbOcc)), i*10 );
 						float4 clipPos = UnityWorldToClipPos(position);
 						output.depth = clipPos.z / clipPos.w;
-						output.color = shadeColor( output.color, (clipPos.z * i) / clipPos.w  );
+						//output.color = shadeColor( output.color, (clipPos.z * i) / clipPos.w  );
 						return output;
 					}
 					position += direction * distance;
