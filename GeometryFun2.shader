@@ -45,6 +45,14 @@ Shader "Skuld/Geometry Fun 2"
 			float _Speed;
 			float _Size;
 
+			float2x2 rotate2(float rot)
+			{
+				float sinRot;
+				float cosRot;
+				sincos(rot, sinRot, cosRot);
+				return float2x2(cosRot, sinRot, sinRot, cosRot);
+			}
+
 			[maxvertexcount(96)]
 			[instance(32)]
 			void geom (triangle v2f input[3], inout TriangleStream<v2f> tristream, uint instanceID : SV_GSInstanceID){
@@ -65,10 +73,22 @@ Shader "Skuld/Geometry Fun 2"
 								vertPos *= t*_Size + _Size+1;
 							}
 
-							vertPos.y += jy/10;
-
 							vertPos.z += sin(angle + jx/20);
 							vertPos.x += cos(angle + jx/20);
+							
+							float t = _Time * 100;
+							if ( jy == 1 ){
+								vertPos.xy = mul(rotate2(t),vertPos.xy);
+							}
+							if ( jy == -1 ){
+								vertPos.xy = mul(rotate2(-t),vertPos.xy);
+							}
+							if ( jy == 2 ){
+								vertPos.yz = mul(rotate2(t),vertPos.yz);
+							}
+							if ( jy == -2 ){
+								vertPos.yz = mul(rotate2(-t),vertPos.yz);
+							}
 
 							vert.position = UnityObjectToClipPos(vertPos);//local to world position.			
 							vert.normal = input[i].normal;
