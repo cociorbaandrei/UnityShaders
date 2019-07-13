@@ -28,7 +28,6 @@ Shader "Skuld/Geometry Fun 3"
 			#include "UnityCG.cginc"
 			#include "UnityLightingCommon.cginc"
 
-			//#pragma surface surf Flat novertexlights alphatest:_Cutoff finalcolor:final
 			#pragma multi_compile_prepassfinal
 		
 			struct appdata
@@ -142,11 +141,11 @@ Shader "Skuld/Geometry Fun 3"
 				//lightDir += unity_SHAr + unity_SHAg + unity_SHAb;
 				//lightDir = normalize(lightDir);
 				float2 uv = input.uv;
-				float3 ambLight = ShadeSH9(float4(0,0,0,1));
-				float3 nonAmbLight = _LightColor0;
+				float3 ambLight = saturate(ShadeSH9(float4(0,0,0,1)));
+				float3 nonAmbLight = saturate(_LightColor0);
 				fixed4 c = tex2D(_MainTex, uv);
 				c.rgb = c.rgb * ( ambLight + nonAmbLight ) * shade;
-				c.rgb = c.rgb * shade;
+				//c.rgb = c.rgb * shade;
 				c[3] = 1.0;
 				return c;
 			}

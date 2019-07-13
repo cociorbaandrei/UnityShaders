@@ -14,6 +14,7 @@ Shader "Skuld/Geometry Fun 2"
 		Pass {
 			Lighting Off
 			SeparateSpecular Off
+			Cull Off
 
 			CGPROGRAM
 			#pragma target 5.0
@@ -23,7 +24,6 @@ Shader "Skuld/Geometry Fun 2"
 
 			#include "UnityCG.cginc"
 
-			//#pragma surface surf Flat novertexlights alphatest:_Cutoff finalcolor:final
 			#pragma multi_compile_prepassfinal noshadowmask nodynlightmap nodirlightmap nolightmap
 		
 			struct appdata
@@ -50,7 +50,7 @@ Shader "Skuld/Geometry Fun 2"
 				float sinRot;
 				float cosRot;
 				sincos(rot, sinRot, cosRot);
-				return float2x2(cosRot, sinRot, sinRot, cosRot);
+				return float2x2(cosRot, -sinRot, sinRot, cosRot);
 			}
 
 			[maxvertexcount(96)]
@@ -76,18 +76,18 @@ Shader "Skuld/Geometry Fun 2"
 							vertPos.z += sin(angle + jx/20);
 							vertPos.x += cos(angle + jx/20);
 							
-							float t = _Time * 100;
+							float angle = _Time * 10;
 							if ( jy == 1 ){
-								vertPos.xy = mul(rotate2(t),vertPos.xy);
+								vertPos.xy = mul(rotate2(angle),vertPos.xy);
 							}
 							if ( jy == -1 ){
-								vertPos.xy = mul(rotate2(-t),vertPos.xy);
+								vertPos.xy = mul(rotate2(-angle),vertPos.xy);
 							}
 							if ( jy == 2 ){
-								vertPos.yz = mul(rotate2(t),vertPos.yz);
+								vertPos.yz = mul(rotate2(angle),vertPos.yz);
 							}
 							if ( jy == -2 ){
-								vertPos.yz = mul(rotate2(-t),vertPos.yz);
+								vertPos.yz = mul(rotate2(-angle),vertPos.yz);
 							}
 
 							vert.position = UnityObjectToClipPos(vertPos);//local to world position.			

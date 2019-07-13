@@ -22,7 +22,6 @@
 
 			#include "UnityCG.cginc"
 
-			//#pragma surface surf Flat novertexlights alphatest:_Cutoff finalcolor:final
 			#pragma multi_compile_prepassfinal noshadowmask nodynlightmap nodirlightmap nolightmap
 		
 			struct appdata
