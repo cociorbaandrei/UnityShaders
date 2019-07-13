@@ -47,12 +47,12 @@
 			
 		/*this is how you control the lighting and alpha. tags does nothing. */
 		//Alpha cutout:
-		#pragma surface surf Flat novertexlights alphatest:_Cutoff finalcolor:final
+		#pragma surface surf Flat novertexlights alphatest:_Cutoff finalcolor:final fullforwardshadows addshadow
 		//Pure Alpha:
 		//#pragma surface surf Flat alphatest:_Cutoff
 		//Opaque:
 		//#pragma surface surf Flat
-		#pragma target 3.0
+		#pragma target 5.0
 
 		struct Input
 		{
@@ -145,10 +145,6 @@
 			}
 		}
 		
-		void vert (inout appdata_base v, out Input o) {
-			
-		}
-
 		void final(Input IN, SurfaceOutput o, inout fixed4 color) {
 			 
         }
