@@ -12,6 +12,7 @@
 		Pass {
 			Lighting Off
 			SeparateSpecular Off
+			Cull Off
 
 			CGPROGRAM
 			#pragma target 4.0
