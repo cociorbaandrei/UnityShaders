@@ -17,7 +17,7 @@
 		[space]
 		_Spread("Edge Softness", Range(0,1)) = 0
 		_Pivot("Shade Center",Range(0,1)) = .5
-		_SRange("Shard Range",Range(0,1)) = 1.0
+		_SRange("Shade Range",Range(0,1)) = 1.0
 		_Max("Max Brightness", Range(0,1)) = 1.0
 		_Min("Min Brightness",Range(0,1)) = 0.0
 
@@ -47,7 +47,7 @@
 			
 		/*this is how you control the lighting and alpha. tags does nothing. */
 		//Alpha cutout:
-		#pragma surface surf Flat novertexlights alphatest:_Cutoff finalcolor:final fullforwardshadows addshadow
+		#pragma surface surf Flat novertexlights alphatest:_Cutoff fullforwardshadows addshadow
 		//Pure Alpha:
 		//#pragma surface surf Flat alphatest:_Cutoff
 		//Opaque:
@@ -145,10 +145,6 @@
 			}
 		}
 		
-		void final(Input IN, SurfaceOutput o, inout fixed4 color) {
-			 
-        }
-
 		half4 LightingFlat_GI( inout SurfaceOutput s, UnityGIInput data, inout UnityGI gi )
 		{
 			return 1.0;
@@ -194,8 +190,7 @@
 
 			//constrain to visual min/max 
 			//This is for completely black or fully bright areas.
-			if ( value < _Min ) value = _Min;
-			if ( value > _Max ) value = _Max;
+			value = saturate(value);
 			
 			half3 ambColor = ShadeSH9(ambientDir);
 			half3 lightColor = ambColor + _LightColor0.rgb;
