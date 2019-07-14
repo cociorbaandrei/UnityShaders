@@ -64,6 +64,7 @@
 				float4 objectPosition;
 				float3 worldPosition;
 				float3 normal;
+				float3 worldNormal;
 				float2 uv;
 				float3 viewDirection;
 				float4 cameraPosition;
@@ -98,7 +99,7 @@
 			}
 
 			fixed4 applyFresnel( PIO process, fixed4 inColor ){
-				float val = saturate(-dot(process.viewDirection, process.normal));
+				float val = saturate(-dot(process.viewDirection, process.worldNormal));
 				float rim = 1 - val * _Retract;
 				rim= max(0,rim);
 				rim *= _FresnelColor.a;
@@ -128,7 +129,7 @@
 
 			Light calculateDirectionalLight( PIO process, Light light ){
 				float3 color = _LightColor0;
-				float brightness = saturate(dot(_WorldSpaceLightPos0, process.normal));
+				float brightness = saturate(dot(_WorldSpaceLightPos0, process.worldNormal));
 
 				light.brightness += brightness;
 				light.color += color;
@@ -172,10 +173,11 @@
 				process.worldPosition = mul(unity_ObjectToWorld,input.objectPosition);
 				//get the direction from the camera to the pixel.
 				process.viewDirection = normalize(process.worldPosition - process.cameraPosition);
-				process.normal = normalize( UnityObjectToWorldNormal( input.normal ));
+				process.normal = normalize( input.normal );
 				if (!isFrontFace){
 					process.normal = -process.normal;
 				}
+				process.worldNormal = normalize( UnityObjectToWorldNormal( process.normal ));
 				process.position = input.position;
 				process.uv = input.uv;
 
