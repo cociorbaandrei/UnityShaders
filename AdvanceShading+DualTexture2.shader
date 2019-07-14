@@ -68,6 +68,12 @@
 				float4 cameraPosition;
 			};
 
+			struct Light
+			{
+				float brightness;
+				half3 color;
+			};
+
 			/*
 			struct SVIO
 			{
@@ -111,44 +117,28 @@
 				return color;
 			}
 
-			fixed4 applyDirectionalLight( PIO process, fixed4 inColor ){
+			//applies ambient light from directional and lightprobes.
+			Light calculateAmbientLight( PIO process, Light light){
+				float3 baseColor = saturate(ShadeSH9( float4(process.normal,1) ));
+				float brightness = ( baseColor.r + baseColor.g + baseColor.b ) / 3;
+				float3 ambientColor = saturate(ShadeSH9( float4(1,1,1,1) ));
+				light.brightness = brightness;
+				light.color = ambientColor;
+				return light;
+			}
+
+			Light calculateDirectionalLight( PIO process, Light light ){
 				float3 color = _LightColor0;
 				float brightness = saturate(dot(_WorldSpaceLightPos0, process.normal));
 
-				//I need the ambient color 
-				if (brightness <= 0 ){
-					color = float3(1,1,1);
-				}
-				
-				//apply ramp:
-				if ( _ShadeSoftness > 0 ){
-					brightness -= _ShadePivot;
-					brightness *= 1/_ShadeSoftness;
-					brightness += _ShadePivot;
-				} else {
-					if (brightness > _ShadePivot){
-						brightness = 1;
-					} else {
-						brightness = 0;
-					}
-				}
-				
-				brightness = saturate(brightness);
-				//apply range, min and max:
-				brightness = brightness * _ShadeRange + (1 - _ShadeRange);
-				brightness = max(_ShadeMin,brightness);
-				brightness = min(_ShadeMax,brightness);
-				inColor.rgb *= brightness;
-				inColor.rgb *= color;
-
-				return inColor;
+				light.brightness += brightness;
+				light.color += color;
+				return light;
 			}
 
-			//applies ambient light from directional and lightprobes.
-			fixed4 applyAmbientLight( PIO process, fixed4 inColor){
-				float brightness = saturate(ShadeSH9( float4(process.normal,1) ));
-				float ambientColor = saturate(ShadeSH9( float4(1,1,1,1) ));
-				//apply ramp:
+			fixed4 applyLight(PIO process, Light light, fixed4 color){
+				float brightness = light.brightness;
+				//apply faux ramp:
 				if ( _ShadeSoftness > 0 ){
 					brightness -= _ShadePivot;
 					brightness *= 1/_ShadeSoftness;
@@ -161,13 +151,15 @@
 					}
 				}
 				brightness = saturate(brightness);
+
 				//apply range, min and max:
 				brightness = brightness * _ShadeRange + (1 - _ShadeRange);
 				brightness = max(_ShadeMin,brightness);
 				brightness = min(_ShadeMax,brightness);
-				inColor.rgb *= brightness;
-				inColor.rgb *= ambientColor;
-				return inColor;
+
+				color.rgb = color.rgb * light.color;
+				color.rgb *= brightness;
+				return color;
 			}
 
 			fixed4 frag( IO input, uint isFrontFace : SV_IsFrontFace ) : SV_Target
@@ -194,9 +186,12 @@
 				//Apply Fresnel
 				color = fresnel(process, color);
 
+				Light light;
+
 				//Apply baselights
-				color = applyAmbientLight(process,color);
-				color = applyDirectionalLight(process,color);
+				light = calculateAmbientLight(process,light);
+				light = calculateDirectionalLight(process,light);
+				color = applyLight(process, light, color);
 
 				//Apply cut.
 				if (color.a <= _TCut){
