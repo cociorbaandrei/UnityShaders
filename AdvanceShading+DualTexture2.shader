@@ -54,13 +54,14 @@
 				float4 position : POSITION;
 				float3 normal : NORMAL;
 				float2 uv : TEXCOORD0;
-				float4 worldPosition : TEXCOORD3;
+				float4 objectPosition : TEXCOORD3;
 			};
 
 			//processed IO to be used by submethods
 			struct PIO
 			{
 				float4 position;
+				float4 objectPosition;
 				float3 worldPosition;
 				float3 normal;
 				float2 uv;
@@ -73,15 +74,6 @@
 				float brightness;
 				half3 color;
 			};
-
-			/*
-			struct SVIO
-			{
-				float2 uv : TEXCOORD0;
-				float4 position : SV_POSITION;
-				float3 normal : NORMAL;
-			};
-			*/
 
 			sampler2D _MainTex;
 			sampler2D _MainTex_ST;
@@ -101,27 +93,34 @@
 				output.uv = vertex.uv;//TRANSFORM_TEX( vertex.uv, _MainTex );
 				output.normal = vertex.normal;
 				output.position = UnityObjectToClipPos(vertex.position);
-				output.worldPosition = vertex.position;
+				output.objectPosition = vertex.position;
 				return output;
 			}
 
-			fixed4 fresnel( PIO process, fixed4 inColor ){
+			fixed4 applyFresnel( PIO process, fixed4 inColor ){
 				float val = saturate(-dot(process.viewDirection, process.normal));
 				float rim = 1 - val * _Retract;
-				if (rim < 0.0 ) rim = 0.0;
+				rim= max(0,rim);
 				rim *= _FresnelColor.a;
 				float orim = 1 - rim;
 				fixed4 color;
-				color.rgb = (_FresnelColor * rim) + (inColor * orim);
-				color.a = inColor.a;
-				return color;
+				inColor.rgb = (_FresnelColor * rim) + (inColor * orim);
+				return inColor;
 			}
 
-			//applies ambient light from directional and lightprobes.
+			//keep in mind to always add lights. But multiply the sum to the final color. 
+			//This method applies ambient light from directional and lightprobes.
 			Light calculateAmbientLight( PIO process, Light light){
+				//we only want ShadeSH9 to give us the brightness, I'm yet to find out how the method determines
+				//The light direction to get a proper brightness value.
 				float3 baseColor = saturate(ShadeSH9( float4(process.normal,1) ));
 				float brightness = ( baseColor.r + baseColor.g + baseColor.b ) / 3;
-				float3 ambientColor = saturate(ShadeSH9( float4(1,1,1,1) ));
+				//float3 ambientColor = saturate(ShadeSH9( float4(1,1,1,0) ));
+				float3 ambientColor;
+				//found this by reading the source. Although it would be nice to know the direction before this, to calculate that brightness.
+				ambientColor.r = unity_SHAr + unity_SHBr;
+				ambientColor.g = unity_SHAg + unity_SHBg;
+				ambientColor.b = unity_SHAb + unity_SHBb;
 				light.brightness = brightness;
 				light.color = ambientColor;
 				return light;
@@ -159,6 +158,7 @@
 
 				color.rgb = color.rgb * light.color;
 				color.rgb *= brightness;
+				color.rgb = saturate(color.rgb);
 				return color;
 			}
 
@@ -169,10 +169,10 @@
 				//get the camera position to calculate view direction.
 				process.cameraPosition = float4(_WorldSpaceCameraPos,1);
 				//reverse the draw position for the screen back to the world position for calculating view Direction.
-				process.worldPosition = input.worldPosition;
+				process.worldPosition = mul(unity_ObjectToWorld,input.objectPosition);
 				//get the direction from the camera to the pixel.
-				process.viewDirection = normalize(input.worldPosition - process.cameraPosition);
-				process.normal = normalize(input.normal);
+				process.viewDirection = normalize(process.worldPosition - process.cameraPosition);
+				process.normal = normalize( UnityObjectToWorldNormal( input.normal ));
 				if (!isFrontFace){
 					process.normal = -process.normal;
 				}
@@ -183,8 +183,7 @@
 				float2 uv = input.uv;
 				fixed4 color = tex2D( _MainTex, process.uv );
 
-				//Apply Fresnel
-				color = fresnel(process, color);
+				color = applyFresnel(process, color);
 
 				Light light;
 
