@@ -129,7 +129,7 @@
 
 			Light calculateDirectionalLight( PIO process, Light light ){
 				float3 color = _LightColor0;
-				float brightness = saturate(dot(_WorldSpaceLightPos0, process.worldNormal));
+				float brightness = saturate(dot(_WorldSpaceLightPos0, process.normal));
 
 				light.brightness += brightness;
 				light.color += color;
