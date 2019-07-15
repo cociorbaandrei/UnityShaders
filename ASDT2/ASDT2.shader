@@ -1,26 +1,33 @@
 ﻿Shader "Skuld/Advance Shading + Dual Texture 2"
 {
 	Properties {
-		[Enum(UnityEngine.Rendering.BlendMode)] _SrcBlend("Source Blend", Float) = 1                 // "One"
-		[Enum(UnityEngine.Rendering.BlendMode)] _DstBlend("Destination Blend", Float) = 0            // "Zero"
-		[Enum(UnityEngine.Rendering.BlendOp)] _BlendOp("Blend Operation", Float) = 0                 // "Add"
-		[Enum(UnityEngine.Rendering.CullMode)] _CullMode("Cull Mode", Float) = 2                     // "Back"
-		[Toggle] _ZWrite("Z-Write",Float) = 1
-
-        [space]
-		[space]
-		_MainTex("Tattoo (RGB)", 2D) = "black" {}
-		_TCut("Transparent Cutout",Range(0,1)) = 1
-		_FresnelColor("Fresnel Color", Color)=(1, 1, 1, 1)
-		_Retract("Fresnel Retract", Range(0,10)) = 0.5
-
-        [space]
 		[space]
 		_ShadeRange("Shade Range",Range(0,1)) = 1.0
 		_ShadeSoftness("Edge Softness", Range(0,1)) = 0
 		_ShadePivot("Center",Range(0,1)) = .5
 		_ShadeMax("Max Brightness", Range(0,1)) = 1.0
 		_ShadeMin("Min Brightness",Range(0,1)) = 0.0
+
+		[space]
+		[Enum(UnityEngine.Rendering.BlendMode)] _SrcBlend("Source Blend", Float) = 1                 // "One"
+		[Enum(UnityEngine.Rendering.BlendMode)] _DstBlend("Destination Blend", Float) = 0            // "Zero"
+		[Enum(UnityEngine.Rendering.BlendOp)] _BlendOp("Blend Operation", Float) = 0                 // "Add"
+		[Enum(UnityEngine.Rendering.CullMode)] _CullMode("Cull Mode", Float) = 2                     // "Back"
+		[Toggle] _ZWrite("Z-Write",Float) = 1
+
+		[space]
+		_MainTex("Base Layer", 2D) = "black" {}
+		_TCut("Transparent Cutout",Range(0,1)) = 1
+		_FresnelColor("Fresnel Color", Color)=(1, 1, 1, 1)
+		_FresnelRetract("Fresnel Retract", Range(0,10)) = 0.5
+
+		[space]
+		_MaskTex("Mask Layer", 2D) = "black" {}
+		[Toggle] _MaskGlow("Mask Glow", Float) = 0
+		_MaskGlowColor("Glow Color", Color)=(1, 1, 1, 1)
+		[Toggle] _MaskRainbow("Rainbow Effect", Float) = 0
+		_MaskGlowSpeed("Glow Speed",Range(0,10)) = 1
+		_MaskGlowSharpness("Glow Sharpness",Range(1,200)) = 1.0
 
 	}
 

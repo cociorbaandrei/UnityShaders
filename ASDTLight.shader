@@ -8,19 +8,6 @@ use ASDT2.
 Shader "Skuld/Advanced Shading and Dual Texture Light"
 {
 	Properties {
-        //[Enum(BlendMode)] _Mode("Rendering Mode", Float) = 0                                     // "Opaque"
-        [Enum(UnityEngine.Rendering.BlendMode)] _SrcBlend("Source Blend", Float) = 1                 // "One"
-        [Enum(UnityEngine.Rendering.BlendMode)] _DstBlend("Destination Blend", Float) = 0            // "Zero"
-        [Enum(UnityEngine.Rendering.BlendOp)] _BlendOp("Blend Operation", Float) = 0                 // "Add"
-        [Enum(UnityEngine.Rendering.CullMode)] _CullMode("Cull Mode", Float) = 2                     // "Back"
-		[Toggle] _ZWrite("Z-Write",Float) = 1
-
-		[space]
-		_MainTex("Base (RGB)", 2D) = "gray" {}
-		_TCut("Transparent Cutout",Range(0,1)) = 1
-		_Color("Fresnel Color", Color)=(1, 1, 1, 1)
-		_RimValue("Fresnel Retract", Range(0,10)) = 0.5
-
 		[space]
 		_Spread("Edge Softness", Range(0,1)) = 0
 		_Pivot("Shade Center",Range(0,1)) = .5
@@ -29,10 +16,23 @@ Shader "Skuld/Advanced Shading and Dual Texture Light"
 		_Min("Min Brightness",Range(0,1)) = 0.0
 
 		[space]
-		_SubTex("Tattoo (RGB)", 2D) = "black" {}
-		[Toggle] _TGlow("Tattoo Glow", Float) = 0
+        [Enum(UnityEngine.Rendering.BlendMode)] _SrcBlend("Source Blend", Float) = 1                 // "One"
+        [Enum(UnityEngine.Rendering.BlendMode)] _DstBlend("Destination Blend", Float) = 0            // "Zero"
+        [Enum(UnityEngine.Rendering.BlendOp)] _BlendOp("Blend Operation", Float) = 0                 // "Add"
+        [Enum(UnityEngine.Rendering.CullMode)] _CullMode("Cull Mode", Float) = 2                     // "Back"
+		[Toggle] _ZWrite("Z-Write",Float) = 1
+
+		[space]
+		_MainTex("Base Layer", 2D) = "gray" {}
+		_TCut("Transparent Cutout",Range(0,1)) = 1
+		_Color("Fresnel Color", Color)=(1, 1, 1, 1)
+		_RimValue("Fresnel Retract", Range(0,10)) = 0.5
+
+		[space]
+		_SubTex("Mask Layer", 2D) = "black" {}
+		[Toggle] _TGlow("Mask Glow", Float) = 0
 		_TGlowColor("Glow Color", Color)=(1, 1, 1, 1)
-		[Toggle] _TRainbow("Rainbow", Float) = 0
+		[Toggle] _TRainbow("Rainbow Effect", Float) = 0
 		_TSpeed("Glow Speed",Range(0,10)) = 1
 		_TSharpness("Glow Sharpness",Range(1,200)) = 1.0
 	}

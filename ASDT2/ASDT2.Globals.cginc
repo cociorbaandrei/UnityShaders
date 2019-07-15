@@ -23,12 +23,6 @@ struct Light
 	float brightness;
 	half3 color;
 };
-			
-sampler2D _MainTex;
-sampler2D _MainTex_ST;
-float _Retract;
-float4 _FresnelColor;
-float _TCut;
 
 //shading properties
 float _ShadeRange;
@@ -36,6 +30,22 @@ float _ShadeSoftness;
 float _ShadeMax;
 float _ShadeMin;
 float _ShadePivot;
+
+//Base Layer paramters
+sampler2D _MainTex;
+sampler2D _MainTex_ST;
+float4 _FresnelColor;
+float _FresnelRetract;
+float _TCut;
+
+//Mask Layer Paramters
+sampler2D _MaskTex;
+sampler2D _MaskTex_ST;
+float _MaskGlow;
+float4 _MaskGlowColor;
+float _MaskRainbow;
+float _MaskGlowSpeed;
+float _MaskGlowSharpness;
 
 PIO vert ( IO vertex ){
 	PIO process;
@@ -97,7 +107,7 @@ fixed4 applyCut( fixed4 color ){
 fixed4 applyFresnel( PIO process, fixed4 inColor ){
 	float3 viewDirection = normalize(process.worldPosition - _WorldSpaceCameraPos);
 	float val = saturate(-dot(process.viewDirection, process.worldNormal));
-	float rim = 1 - val * _Retract;
+	float rim = 1 - val * _FresnelRetract;
 	rim= max(0,rim);
 	rim *= _FresnelColor.a;
 	float orim = 1 - rim;
