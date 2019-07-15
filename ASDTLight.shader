@@ -1,4 +1,11 @@
-﻿Shader "Skuld/Advanced Shading and Dual Texture"
+﻿/*
+This is a basic surface shader version of ASDT, 
+it is meant to be able to run on anything unity translates it for.
+Namely the Occulus Quest, Android and other lower end machines.
+For something that is more scalable and runs better on higher end machines
+use ASDT2.
+*/
+Shader "Skuld/Advanced Shading and Dual Texture Light"
 {
 	Properties {
         //[Enum(BlendMode)] _Mode("Rendering Mode", Float) = 0                                     // "Opaque"
@@ -138,11 +145,8 @@
 			o.Albedo = (_Color * rim) + (c * orim);
 
 			//make sure the end alpha is alpha.
-			if (c.a > _TCut){
-				o.Alpha = c.a;
-			} else {
-				o.Alpha = 0;
-			}
+			if (c.a < _TCut) discard;
+			o.Alpha = c.a;
 		}
 		
 		half4 LightingFlat_GI( inout SurfaceOutput s, UnityGIInput data, inout UnityGI gi )
