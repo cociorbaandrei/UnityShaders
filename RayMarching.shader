@@ -16,7 +16,7 @@ Shader "Skuld/Ray Marching Fun"
 	SubShader {
 		Tags { "RenderType"="TransparentCutout" "Queue"="Transparent-1" }
 		LOD 100
-		Cull Off
+		Cull Front
         Blend[_SrcBlend][_DstBlend]
         BlendOp[_BlendOp]
 		
