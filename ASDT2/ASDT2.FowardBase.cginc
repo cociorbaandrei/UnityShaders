@@ -35,8 +35,16 @@ fixed4 frag( PIO process, uint isFrontFace : SV_IsFrontFace ) : SV_Target
 	process = adjustProcess(process, isFrontFace);
 	color = applyFresnel(process, color);
 
+	if ( !_MaskGlow ){
+		color = applyMaskLayer(process, color);
+	}
+
 	//Apply baselights
 	color = applyLight(process, color);
+
+	if ( _MaskGlow ){
+		color = applyMaskLayer(process, color);
+	}
 
 	return color;
 }

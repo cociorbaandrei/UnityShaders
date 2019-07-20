@@ -84,6 +84,28 @@
 
 			ENDCG
 		}
+
+		Pass {
+			Tags { "LightMode" = "ShadowCaster"}
+
+			CGPROGRAM
+			#include "UnityCG.cginc"
+			#include "UnityLightingCommon.cginc"
+			#include "AutoLight.cginc"
+			#include "UnityPBSLighting.cginc"
+			
+			#pragma target 5.0
+			
+			#pragma vertex vert
+			#pragma fragment frag
+			
+			#pragma multi_compile_fwdadd_fullshadows
+
+			#include "ASDT2.Globals.cginc"
+			#include "ASDT2.shadows.cginc"
+
+			ENDCG
+		}
 	} 
 	//FallBack "Diffuse"
 }

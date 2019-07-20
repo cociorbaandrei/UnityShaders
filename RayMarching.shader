@@ -93,7 +93,7 @@ Shader "Skuld/Ray Marching Fun"
 			*/
 			fixed4 shiftColor( fixed4 inColor, float shift )
 			{
-				float r = shift * 3.1415926535897932384626433832795 / 180;
+				float r = shift * 0.01745329251994329576923690768489;
 				float u = cos(r);
 				float w = sin(r);
 				fixed4 ret;

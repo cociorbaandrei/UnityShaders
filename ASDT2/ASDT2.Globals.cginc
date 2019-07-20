@@ -1,3 +1,4 @@
+#pragma once
 //general IO with Semantics
 struct IO
 {
@@ -56,6 +57,7 @@ PIO vert ( IO vertex ){
 	//reverse the draw position for the screen back to the world position for calculating view Direction.
 	process.worldPosition = mul(unity_ObjectToWorld,vertex.position);
 	process.worldNormal = normalize( UnityObjectToWorldNormal( process.normal ));
+	half4 color;
 
 	return process;
 }
@@ -114,4 +116,53 @@ fixed4 applyFresnel( PIO process, fixed4 inColor ){
 	fixed4 color;
 	inColor.rgb = (_FresnelColor * rim) + (inColor * orim);
 	return inColor;
+}
+
+fixed4 shiftColor( fixed4 inColor, float shift )
+{
+	float r = shift * 0.01745329251994329576923690768489;
+	float u = cos(r);
+	float w = sin(r);
+	fixed4 ret;
+	ret.r = (.299+.701 * u+.168 * w)*inColor.r
+		+ (.587-.587 * u+.330 * w)*inColor.g
+		+ (.114-.114 * u-.497 * w)*inColor.b;
+	ret.g = (.299-.299 * u-.328 * w)*inColor.r
+		+ (.587+.413 * u+.035 * w)*inColor.g
+		+ (.114-.114 * u+.292 * w)*inColor.b;
+	ret.b = (.299-.3 * u+1.25 * w)*inColor.r
+		+ (.587-.588 * u-1.05 * w)*inColor.g
+		+ (.114+.886 * u-.203 * w)*inColor.b;	
+	ret[3] = inColor[3];
+	ret.a = 1;
+	return ret;
+}
+
+fixed4 applyMaskLayer( PIO process, fixed4 inColor )
+{
+	fixed4 outColor = inColor;
+	float2 uv = process.uv;
+	float4 maskColor = tex2D(_MaskTex, uv);
+	float alphaDifference = 1 - maskColor.a;
+	float3 rainbowColor;
+
+	if ( _MaskGlow ){
+		int time = ( _Time * (_MaskGlowSpeed*1000) );
+		float gp = ( time % 120 ) / 100.0f - .1;
+
+		float igv = (gp - uv[1]);
+		if (igv < 0 ) igv = 0 - igv;
+		igv = igv * _MaskGlowSharpness;
+		if (igv > 1 ) igv = 1;
+		if (igv < 0 ) igv = 0;
+		float gv = 1-igv;
+		if (_MaskRainbow){
+			int rt = _Time * 7000;
+			_MaskGlowColor = normalize(shiftColor(half4(1,0,0,1),rt));
+		}
+		maskColor.rgb = (maskColor.rgb * igv) + (_MaskGlowColor.rgb * gv);
+	}
+	outColor = ( outColor * alphaDifference ) + (maskColor * maskColor.a);
+
+	return outColor;
 }
