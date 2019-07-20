@@ -1,155 +1,140 @@
-﻿// Upgrade NOTE: replaced '_Object2World' with 'unity_ObjectToWorld'
-
-Shader "Skuld/Geometry Fun 3"
+Shader "Skuld/Advance Shading + Dual Texture 2"
 {
 	Properties {
-		_MainTex("Noise Texture", 2D) = "gray" {}
+		[space]
 		_Step("Step", Range(0,1)) = 1
 		_Distance("Distance",float) = 1
 		_Spread("Spread", Range(0,1)) = 1
+
+		[space]
+		_ShadeRange("Shade Range",Range(0,1)) = 1.0
+		_ShadeSoftness("Edge Softness", Range(0,1)) = 0
+		_ShadePivot("Center",Range(0,1)) = .5
+		_ShadeMax("Max Brightness", Range(0,1)) = 1.0
+		_ShadeMin("Min Brightness",Range(0,1)) = 0.0
+
+		[space]
+		[Enum(UnityEngine.Rendering.BlendMode)] _SrcBlend("Source Blend", Float) = 1                 // "One"
+		[Enum(UnityEngine.Rendering.BlendMode)] _DstBlend("Destination Blend", Float) = 0            // "Zero"
+		[Enum(UnityEngine.Rendering.BlendOp)] _BlendOp("Blend Operation", Float) = 0                 // "Add"
+		[Enum(UnityEngine.Rendering.CullMode)] _CullMode("Cull Mode", Float) = 2                     // "Back"
+		[Toggle] _ZWrite("Z-Write",Float) = 1
+
+		[space]
+		_MainTex("Base Layer", 2D) = "black" {}
+		_TCut("Transparent Cutout",Range(0,1)) = 1
+		_FresnelColor("Fresnel Color", Color)=(1, 1, 1, 1)
+		_FresnelRetract("Fresnel Retract", Range(0,10)) = 0.5
+
+		[space]
+		_MaskTex("Mask Layer", 2D) = "black" {}
+		[Toggle] _MaskGlow("Mask Glow", Float) = 0
+		_MaskGlowColor("Glow Color", Color)=(1, 1, 1, 1)
+		[Toggle] _MaskRainbow("Rainbow Effect", Float) = 0
+		_MaskGlowSpeed("Glow Speed",Range(0,10)) = 1
+		_MaskGlowSharpness("Glow Sharpness",Range(1,200)) = 1.0
 	}
 
 	SubShader {
-		Tags { "RenderType"="Opaque" "Queue"="Geometry+1" "LightMode" = "ForwardBase"}
+		Tags { "RenderType"="TransparentCutout" "Queue"="Geometry+1"}
+
+        Blend[_SrcBlend][_DstBlend]
+        BlendOp[_BlendOp]
+        Cull[_CullMode]
+		AlphaTest Greater[_TCut] //cut amount
+		Lighting Off
+		SeparateSpecular Off
+		ZWrite [_ZWrite]
 
 		Pass {
-			Tags { "LightMode" = "ForwardBase" "RenderType"="Opaque" "Queue"="Geometry+1"}
-
-			Lighting Off
-			SeparateSpecular Off
-			Cull Off
-
+			Tags { "LightMode" = "ForwardBase"}
 			CGPROGRAM
-			#pragma target 5.0
-			#pragma geometry geom
-			#pragma vertex vert
-			#pragma fragment frag
-
 			#include "UnityCG.cginc"
 			#include "UnityLightingCommon.cginc"
+			#include "AutoLight.cginc"
+			#include "UnityPBSLighting.cginc"
+			
+			#pragma target 5.0
+			#pragma vertex vert
+			#pragma geometry geom
+			#pragma fragment frag novertexlights nolighting
 
 			#pragma multi_compile_prepassfinal
-		
-			struct appdata
-			{
-				float4 position : POSITION;
-				float3 normal : NORMAL;
-				float2 uv : TEXCOORD0;
-			};
 
-			struct v2f
-			{
-				float2 uv : TEXCOORD0;
-				float4 position : SV_POSITION;
-				float3 normal : NORMAL;
-			};
-
-			sampler2D _MainTex;
-			float4 _MainTex_ST;
+			#include "ASDT2/ASDT2.Globals.cginc"
+			#include "ASDT2/ASDT2.FowardBase.cginc"
+			
 			float _Step;
 			float _Distance;
 			float _Spread;
 
-			float2x2 rotate2(float rot)
-			{
-				float sinRot;
-				float cosRot;
-				sincos(rot, sinRot, cosRot);
-				return float2x2(cosRot, sinRot, sinRot, cosRot);
-			}
-
+			/*
+				Now instead of it being it's own stand alone shader. It was better and easier to make this shader
+				work inside of the toon shader. This way it will look more part of the character, rather than
+				different.
+			*/
 			[maxvertexcount(24)]
 			[instance(9)]
-			void geom (triangle v2f input[3], inout TriangleStream<v2f> tristream, uint instanceID : SV_GSInstanceID){
+			void geom (triangle PIO input[3], inout TriangleStream<PIO> tristream, uint instanceID : SV_GSInstanceID){
 				float jx,jy,jz;
 				int i = 0;
 
 				float angle = float(instanceID) * 0.78539816339744830961566084581988;
 				float4 direction;
+				float4 position;
 				direction.x = cos(angle);
 				direction.y = sin(angle);
 				direction.z = 0;
 				direction.w = 1.0;
+
 						
 				direction *= _Spread;
+				direction.w = 1.0;
+
 				if (instanceID == 0){
 					direction *= 0;
 				}
 				for ( jx = -2; jx < 3; ++jx ){
 					for ( jy = -2; jy < 3; ++jy ){
-						float4 center = ( input[0].position + input[1].position + input[2].position ) / 3;
+						float4 center = ( input[0].objectPosition + input[1].objectPosition + input[2].objectPosition ) / 3;
 						float4 destination = center * _Step * _Distance;
 
-						v2f vert;
-						vert.position = input[0].position;
-						vert.position -= ( ( input[0].position - center ) * _Step );
-						vert.position += destination;
-						vert.position += direction;
-						vert.uv = input[0].uv;
-						vert.normal = input[0].normal;
-						vert.position = UnityObjectToClipPos(vert.position);
+						PIO vert = input[0];
+						position = vert.objectPosition;
+						position -= ( ( position - center ) * _Step );
+						position += destination;
+						position += direction;
+						vert.position = UnityObjectToClipPos(position);
 						tristream.Append(vert);
 
-						vert.position = input[1].position;
-						vert.position -= ( ( input[1].position - center ) * _Step );
-						vert.position += destination;
-						vert.position += direction;
-						vert.uv = input[1].uv;
-						vert.normal = input[1].normal;
-						vert.position = UnityObjectToClipPos(vert.position);
+						vert = input[1];
+						position = vert.objectPosition;
+						position -= ( ( position - center ) * _Step );
+						position += destination;
+						position += direction;
+						vert.position = UnityObjectToClipPos(position);
 						tristream.Append(vert);
 
-						vert.position = input[2].position;
-						vert.position -= ( ( input[2].position - center ) * _Step );
-						vert.position += destination;
-						vert.position += direction;
-						vert.uv = input[2].uv;
-						vert.normal = input[2].normal;
-						vert.position = UnityObjectToClipPos(vert.position);
+						vert = input[2];
+						position = vert.objectPosition;
+						position -= ( ( position - center ) * _Step );
+						position += destination;
+						position += direction;
+						vert.position = UnityObjectToClipPos(position);
 						tristream.Append(vert);
-
 
 						tristream.RestartStrip();
 					}
 				}
 			}
 
-			v2f vert ( appdata v) {
-				//for some reason this is required, and all it does is copy everything along.
-				v2f o;
-				o.position = v.position;
-				o.uv = TRANSFORM_TEX(v.uv,_MainTex);
-				o.normal = v.normal;
-				return o;
-			}
-
-			fixed4 frag(v2f input ) : SV_Target
-			{
-				float3 lightDir = UnityWorldSpaceLightDir (input.position);
-				float4 ambientDir = float4(normalize(unity_SHAr.xyz + unity_SHAg.xyz + unity_SHAb.xyz), 1.0);
-
-				float3 normal = normalize(input.normal);
-				float ambValue = dot( normal, ambientDir);
-				half nonAmbValue = dot (normal, lightDir);
-				half shade = saturate( max(ambValue,nonAmbValue));
-				if (shade == 0){
-					float4 down = normalize(float4(0,1,0,1));
-					shade = saturate(dot(normal,down))*10;
-				}
-				shade = shade / 2 + 5;
-
-				//lightDir += unity_SHAr + unity_SHAg + unity_SHAb;
-				//lightDir = normalize(lightDir);
-				float2 uv = input.uv;
-				float3 ambLight = saturate(ShadeSH9(float4(0,0,0,1)));
-				float3 nonAmbLight = saturate(_LightColor0);
-				fixed4 c = tex2D(_MainTex, uv);
-				c.rgb = c.rgb * ( ambLight + nonAmbLight ) * shade;
-				//c.rgb = c.rgb * shade;
-				c[3] = 1.0;
-				return c;
-			}
 			ENDCG
 		}
-	}
+		/*
+			the forward add lights and shadows had to be removed, or else
+			I needed to repeat the geometry manipulation.
+			Which is already expensive as it is, so just dropping it.
+		*/
+	} 
+	//FallBack "Diffuse"
 }
