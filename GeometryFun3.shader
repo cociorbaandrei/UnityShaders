@@ -73,7 +73,7 @@ Shader "Skuld/Advance Shading + Dual Texture 2"
 				work inside of the toon shader. This way it will look more part of the character, rather than
 				different.
 			*/
-			[maxvertexcount(24)]
+			[maxvertexcount(3)]
 			[instance(9)]
 			void geom (triangle PIO input[3], inout TriangleStream<PIO> tristream, uint instanceID : SV_GSInstanceID){
 				float jx,jy,jz;
@@ -94,38 +94,35 @@ Shader "Skuld/Advance Shading + Dual Texture 2"
 				if (instanceID == 0){
 					direction *= 0;
 				}
-				for ( jx = -2; jx < 3; ++jx ){
-					for ( jy = -2; jy < 3; ++jy ){
-						float4 center = ( input[0].objectPosition + input[1].objectPosition + input[2].objectPosition ) / 3;
-						float4 destination = center * _Step * _Distance;
+				float4 center = ( input[0].objectPosition + input[1].objectPosition + input[2].objectPosition ) / 3;
+				float4 destination = center * _Step * _Distance;
+				float4 finalTransform = -( ( position - center ) * _Step ) + destination + direction;
 
-						PIO vert = input[0];
-						position = vert.objectPosition;
-						position -= ( ( position - center ) * _Step );
-						position += destination;
-						position += direction;
-						vert.position = UnityObjectToClipPos(position);
-						tristream.Append(vert);
+				PIO vert = input[0];
+				position = vert.objectPosition;
+				position -= ( ( position - center ) * _Step );
+				position += destination;
+				position += direction;
+				vert.position = UnityObjectToClipPos(position);
+				tristream.Append(vert);
 
-						vert = input[1];
-						position = vert.objectPosition;
-						position -= ( ( position - center ) * _Step );
-						position += destination;
-						position += direction;
-						vert.position = UnityObjectToClipPos(position);
-						tristream.Append(vert);
+				vert = input[1];
+				position = vert.objectPosition;
+				position -= ( ( position - center ) * _Step );
+				position += destination;
+				position += direction;
+				vert.position = UnityObjectToClipPos(position);
+				tristream.Append(vert);
 
-						vert = input[2];
-						position = vert.objectPosition;
-						position -= ( ( position - center ) * _Step );
-						position += destination;
-						position += direction;
-						vert.position = UnityObjectToClipPos(position);
-						tristream.Append(vert);
+				vert = input[2];
+				position = vert.objectPosition;
+				position -= ( ( position - center ) * _Step );
+				position += destination;
+				position += direction;
+				vert.position = UnityObjectToClipPos(position);
+				tristream.Append(vert);
 
-						tristream.RestartStrip();
-					}
-				}
+				tristream.RestartStrip();
 			}
 
 			ENDCG
