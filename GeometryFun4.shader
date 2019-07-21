@@ -1,11 +1,14 @@
-﻿// Upgrade NOTE: replaced '_Object2World' with 'unity_ObjectToWorld'
-
+﻿/*
+This looks the same as 2.... but... 
+try putting say a heart as the mesh, or static image, Then you'll be rewarded with something fun.
+Plus there's no spiking, just the entire mesh growing and shrinking.
+*/
 Shader "Skuld/Geometry Fun 4"
 {
 	Properties {
 		_MainTex("Noise Texture", 2D) = "gray" {}
 		_Speed("Animation Speed", Range(1,1000)) = 1
-		_Size("Heart Small Size",Range(0,1)) = 1.0
+		_Size("Minimum Size",Range(0,1)) = 1.0
 	}
 
 	SubShader {
