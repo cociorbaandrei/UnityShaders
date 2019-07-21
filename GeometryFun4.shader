@@ -62,7 +62,6 @@ Shader "Skuld/Geometry Fun 4"
 				float jx,jy,jz;
 				int i = 0;
 
-				//float instanceAngle = float(instanceID) * 0.19634954084936207740391521145497;
 				float instanceAngle = float(instanceID) * 0.19634954084936207740391521145497;
 
 				for ( jy = 1; jy < 7; ++jy ){
@@ -124,7 +123,6 @@ Shader "Skuld/Geometry Fun 4"
 			}
 
 			v2f vert ( appdata v) {
-				//for some reason this is required, and all it does is copy everything along.
 				v2f o;
 				o.position = v.position;
 				o.uv = TRANSFORM_TEX(v.uv,_MainTex);
@@ -134,14 +132,6 @@ Shader "Skuld/Geometry Fun 4"
 			fixed4 frag(v2f input ) : SV_Target
 			{
 				float2 uv = input.uv;
-				/*
-				uv[0] = uv[0]+sin(_Time*40);
-				if (uv[0] < 0.0) uv[0]++;
-				if (uv[0] > 1.0) uv[0]--;
-				uv[1] = uv[1]+cos(_Time*40);
-				if (uv[1] < 0.0) uv[1]++;
-				if (uv[1] > 1.0) uv[1]--;
-				*/
 				fixed4 c = tex2D(_MainTex, uv);
 				return c;
 			}
