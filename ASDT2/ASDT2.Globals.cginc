@@ -162,7 +162,7 @@ fixed4 applyMaskLayer( PIO process, fixed4 inColor )
 		}
 		maskColor.rgb = (maskColor.rgb * igv) + (_MaskGlowColor.rgb * gv);
 	}
-	outColor = ( outColor * alphaDifference ) + (maskColor * maskColor.a);
+	outColor.rgb = ( outColor.rgb * alphaDifference ) + (maskColor.rgb * maskColor.a);
 
 	return outColor;
 }
