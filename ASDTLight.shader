@@ -210,5 +210,4 @@ Shader "Skuld/Advanced Shading and Dual Texture Light"
 		}
 		ENDCG
 	} 
-	//FallBack "Diffuse"
 }
