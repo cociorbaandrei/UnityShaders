@@ -65,9 +65,6 @@
                 output.position = vertex.position;
 
 				float4 grabPosition = vertex.position;
-				//grabPosition /= 2;
-				//grabPosition = UnityObjectToClipPos(grabPosition);
-				//output.grabPosition = ComputeGrabScreenPos(grabPosition);
 				output.normal = vertex.normal;
 				output.worldPosition = mul(unity_ObjectToWorld,vertex.position);
 				output.uv = vertex.uv;
@@ -95,9 +92,9 @@
 			void geom (triangle IO tri[3], inout TriangleStream<IO> triangles ){
 				for ( int i = 0; i < 3; i++ ){
 					IO vertex = tri[i];
-					float wobbleX = sin(_Time*26) / 30 + 1;
-					float wobbleY = cos(_Time*42) / 35 + 1;
-					float wobbleZ = sin(_Time*27) / 33 + 1;
+					float wobbleX = sin(_Time*26) / 15 + 1;
+					float wobbleY = cos(_Time*42) / 17 + 1;
+					float wobbleZ = sin(_Time*27) / 11 + 1;
 					float3 position = tri[i].position;
 					position.x *= wobbleX;
 					position.y *= wobbleY;
