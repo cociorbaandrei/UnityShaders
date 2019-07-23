@@ -1,9 +1,8 @@
-Shader "Skuld/Geometry Fun 3"
+Shader "Skuld/Phase In"
 {
 	Properties {
 		[space]
 		_Step("Step", Range(0,1)) = 1
-		_Distance("Distance",float) = 1
 		_Spread("Spread", Range(0,1)) = 1
 
 		[space]
@@ -65,7 +64,6 @@ Shader "Skuld/Geometry Fun 3"
 			#include "ASDT2/ASDT2.FowardBase.cginc"
 			
 			float _Step;
-			float _Distance;
 			float _Spread;
 
 			/*
@@ -74,35 +72,21 @@ Shader "Skuld/Geometry Fun 3"
 				different.
 			*/
 			[maxvertexcount(3)]
-			[instance(9)]
 			void geom (triangle PIO input[3], inout TriangleStream<PIO> tristream, uint instanceID : SV_GSInstanceID){
 				float jx,jy,jz;
 				int i = 0;
 
 				float angle = float(instanceID) * 0.78539816339744830961566084581988;
-				float4 direction;
 				float4 position;
-				direction.x = cos(angle);
-				direction.y = sin(angle);
-				direction.z = 0;
-				direction.w = 1.0;
 
-						
-				direction *= _Spread;
-				direction.w = 1.0;
-
-				if (instanceID == 0){
-					direction *= 0;
-				}
 				float4 center = ( input[0].objectPosition + input[1].objectPosition + input[2].objectPosition ) / 3;
-				float4 destination = center * _Step * _Distance;
-				float4 finalTransform = -( ( position - center ) * _Step ) + destination + direction;
+				float4 destination = center * _Step;
+				float4 finalTransform = -( ( position - center ) * _Step ) + destination;
 
 				PIO vert = input[0];
 				position = vert.objectPosition;
 				position -= ( ( position - center ) * _Step );
 				position += destination;
-				position += direction;
 				vert.position = UnityObjectToClipPos(position);
 				tristream.Append(vert);
 
@@ -110,7 +94,6 @@ Shader "Skuld/Geometry Fun 3"
 				position = vert.objectPosition;
 				position -= ( ( position - center ) * _Step );
 				position += destination;
-				position += direction;
 				vert.position = UnityObjectToClipPos(position);
 				tristream.Append(vert);
 
@@ -118,7 +101,6 @@ Shader "Skuld/Geometry Fun 3"
 				position = vert.objectPosition;
 				position -= ( ( position - center ) * _Step );
 				position += destination;
-				position += direction;
 				vert.position = UnityObjectToClipPos(position);
 				tristream.Append(vert);
 
