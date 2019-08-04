@@ -9,7 +9,8 @@
         {
             "_Background"
         }
-		        Pass
+		
+		Pass
         {
             CGPROGRAM
             #pragma vertex vert

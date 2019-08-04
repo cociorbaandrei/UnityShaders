@@ -77,11 +77,10 @@
 				output.position = UnityObjectToClipPos( position );
 
 				float4 grabPosition = vertex.position;
-				//grabPosition /= 1.5;
-				grabPosition = UnityObjectToClipPos(grabPosition);
-				output.grabPosition = ComputeGrabScreenPos(grabPosition);
-
-				return output;
+				output.normal = vertex.normal;
+				output.worldPosition = mul(unity_ObjectToWorld,vertex.position);
+				output.uv = vertex.uv;
+                return output;
             }
 
             half4 frag(IO vertex) : SV_Target
