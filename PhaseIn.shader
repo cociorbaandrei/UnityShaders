@@ -2,8 +2,9 @@ Shader "Skuld/Phase In"
 {
 	Properties {
 		[space]
-		_Step("Step", Range(0,1)) = 1
-		_Spread("Spread", Range(0,1)) = 1
+		_Step("Step", Range(0,2)) = 1
+		_Spread("Spread", float) = 1
+		_Verticies("Verticies",float) = 1
 
 		[space]
 		_ShadeRange("Shade Range",Range(0,1)) = 1.0
@@ -65,6 +66,7 @@ Shader "Skuld/Phase In"
 			
 			float _Step;
 			float _Spread;
+			float _Verticies;
 
 			/*
 				Now instead of it being it's own stand alone shader. It was better and easier to make this shader
@@ -76,31 +78,39 @@ Shader "Skuld/Phase In"
 				float jx,jy,jz;
 				int i = 0;
 
-				float angle = float(instanceID) * 0.78539816339744830961566084581988;
+				uint id = max(max(input[0].extras.x,input[1].extras.x),input[2].extras.x);
+				float idScale = float(id)/float(_Verticies);
+				float adjustedStep = min(max( _Step - idScale, 0),1);
+
 				float4 position;
 
 				float4 center = ( input[0].objectPosition + input[1].objectPosition + input[2].objectPosition ) / 3;
-				float4 destination = center * _Step;
-				float4 finalTransform = -( ( position - center ) * _Step ) + destination;
+
+				
+				float4 destination = center * adjustedStep;
+				float4 finalTransform = -( ( position - center ) * adjustedStep ) + destination;
 
 				PIO vert = input[0];
 				position = vert.objectPosition;
-				position -= ( ( position - center ) * _Step );
+				position -= ( ( position - center ) * adjustedStep );
 				position += destination;
+				position.z += adjustedStep*_Spread;
 				vert.position = UnityObjectToClipPos(position);
 				tristream.Append(vert);
 
 				vert = input[1];
 				position = vert.objectPosition;
-				position -= ( ( position - center ) * _Step );
+				position -= ( ( position - center ) * adjustedStep );
 				position += destination;
+				position.z += adjustedStep*_Spread;
 				vert.position = UnityObjectToClipPos(position);
 				tristream.Append(vert);
 
 				vert = input[2];
 				position = vert.objectPosition;
-				position -= ( ( position - center ) * _Step );
+				position -= ( ( position - center ) * adjustedStep );
 				position += destination;
+				position.z += adjustedStep*_Spread;
 				vert.position = UnityObjectToClipPos(position);
 				tristream.Append(vert);
 

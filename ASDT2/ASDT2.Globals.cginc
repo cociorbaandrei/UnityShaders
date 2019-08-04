@@ -5,6 +5,8 @@ struct IO
 	float4 position : POSITION;
 	float3 normal : NORMAL;
 	float2 uv : TEXCOORD0;
+	uint id : SV_VertexID;
+	float4 tangent : TANGENT;
 };
 
 //processed IO to be used by submethods
@@ -17,6 +19,9 @@ struct PIO
 	float3 worldNormal : TEXCOORD2; //The normal in world space.
 	float3 worldPosition : TEXCOORD3; //the position relative to world origin.
 	float3 viewDirection : TEXCOORD4; //The direction the camera is looking at the mesh.
+	float4 tangent : TEXCOORD5;//for bump mapping.
+	float3 binormal : TEXCOORD6; //also for bump mapping.
+	float4 extras : TEXCOORD8;
 };
 
 struct Light
@@ -57,6 +62,8 @@ PIO vert ( IO vertex ){
 	//reverse the draw position for the screen back to the world position for calculating view Direction.
 	process.worldPosition = mul(unity_ObjectToWorld,vertex.position);
 	process.worldNormal = normalize( UnityObjectToWorldNormal( process.normal ));
+	process.extras.x = vertex.id;
+
 	half4 color;
 
 	return process;

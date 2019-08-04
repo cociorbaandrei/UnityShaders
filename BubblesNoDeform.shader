@@ -1,4 +1,4 @@
-﻿Shader "Skuld/Bubbles"
+﻿Shader "Skuld/Bubbles No Deform"
 {
 	Properties{
 
@@ -6,6 +6,8 @@
 	SubShader {
         // Draw ourselves after all opaque geometry
         Tags { "Queue" = "Transparent" }
+
+		Cull Off
 
         // Grab the screen behind the object into _BackgroundTexture
         GrabPass
@@ -67,17 +69,10 @@
 				output.normal = vertex.normal;
 				output.worldNormal = normalize( UnityObjectToWorldNormal( vertex.normal ));
 
-				float wobbleX = sin(_Time*26) / 30 + 1;
-				float wobbleY = cos(_Time*42) / 35 + 1;
-				float wobbleZ = sin(_Time*27) / 33 + 1;
-				float3 position = vertex.position;
-				position.x *= wobbleX;
-				position.y *= wobbleY;
-				position.z *= wobbleZ;
-				output.position = UnityObjectToClipPos( position );
+				output.position = UnityObjectToClipPos( vertex.position );
 
 				float4 grabPosition = vertex.position;
-				//grabPosition /= 1.5;
+				//grabPosition /= 1.01;
 				grabPosition = UnityObjectToClipPos(grabPosition);
 				output.grabPosition = ComputeGrabScreenPos(grabPosition);
 
