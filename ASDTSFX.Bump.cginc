@@ -29,31 +29,30 @@ PIO vertfx ( IO vertex ){
 		process.tangent = float4(UnityObjectToWorldDir(vertex.tangent.xyz), vertex.tangent.w);
 	#else
 		process.tangent = float4(UnityObjectToWorldDir(vertex.tangent),1);
-		process.binormal = CreateBinormal(process.normal, process.tangent.xyz, vertex.tangent.w);
+		process.binormal = CreateBinormal(process.worldNormal, process.tangent.xyz, vertex.tangent.w);
 	#endif
 
 	half4 color;
-
 	return process;
 }
 
 PIO adjustNormalsForBump( PIO process ){
 	float3 tangentSpaceNormal =
 		UnpackScaleNormal(tex2D(_BumpTex, process.uv), _BumpScale);
-
 	#if defined(BINORMAL_PER_FRAGMENT)
-		process.binormal = CreateBinormal(process.normal, process.tangent.xyz, process.tangent.w);
+		process.binormal = CreateBinormal(process.worldNormal, process.tangent.xyz, process.tangent.w);
 
 	#endif
 
 	process.worldNormal = normalize(
 		tangentSpaceNormal.x * process.tangent +
 		tangentSpaceNormal.y * process.binormal +
-		tangentSpaceNormal.z * process.normal
+		tangentSpaceNormal.z * process.worldNormal
 	);
 	return process;
 }
 
+#if defined(FORWARDBASE)
 fragOutput fragsfx( PIO process, uint isFrontFace : SV_IsFrontFace ) 
 {
 	fragOutput output;
@@ -84,3 +83,24 @@ fragOutput fragsfx( PIO process, uint isFrontFace : SV_IsFrontFace )
 	output.color = color;
 	return output;
 }
+#else 
+fixed4 fragfxfa( PIO process, uint isFrontFace : SV_IsFrontFace ) : SV_Target
+{
+	//adjust the normals for bump mapping.
+	process = adjustNormalsForBump(process);
+
+	fixed4 color = tex2D( _MainTex, process.uv );
+	clip(color.a - _TCut);
+
+	process = adjustProcess(process, isFrontFace);
+	color = applyFresnel(process, color);
+
+	process = adjustProcess(process, 0);
+	float3 lightDirection = normalize(process.worldPosition - _WorldSpaceLightPos0.xyz);
+	float brightness = saturate(dot(lightDirection,process.normal));// * unity_4LightAtten0;
+	brightness = applyToonEdge(process, brightness);
+	color.rgb = saturate( color.rgb * _LightColor0.rgb * brightness );
+
+	return color;
+}
+#endif

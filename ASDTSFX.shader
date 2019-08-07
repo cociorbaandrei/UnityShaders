@@ -55,6 +55,7 @@
 			#pragma fragment fragsfx
 
 			#pragma multi_compile_prepassfinal
+			#define FORWARDBASE
 
 			#include "ASDT2/ASDT2.Globals.cginc"
 			#include "ASDT2/ASDT2.FowardBase.cginc"
@@ -75,6 +76,7 @@
 			#pragma fragment fragsfx
 
 			#pragma multi_compile_prepassfinal
+			#define FORWARDBASE
 
 			#include "ASDT2/ASDT2.Globals.cginc"
 			#include "ASDT2/ASDT2.FowardBase.cginc"
@@ -93,13 +95,14 @@
 			
 			#pragma target 5.0
 			
-			#pragma vertex vert
-			#pragma fragment frag
+			#pragma vertex vertfx
+			#pragma fragment fragfxfa
 			
 			#pragma multi_compile_fwdadd_fullshadows
 
 			#include "ASDT2/ASDT2.Globals.cginc"
 			#include "ASDT2/ASDT2.FowardAdd.cginc"
+			#include "ASDTSFX.Bump.cginc"
 
 			ENDCG
 		}

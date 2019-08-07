@@ -1,4 +1,4 @@
-﻿Shader "Skuld/Bubbles"
+﻿Shader "Skuld/Grabpass/Warp Type 1"
 {
 	Properties{
 
@@ -39,6 +39,7 @@
 			
             sampler2D _Background;
 
+			/*
 			fixed4 shiftColor( fixed4 inColor, float shift )
 			{
 				float r = shift * 0.01745329251994329576923690768489;
@@ -58,6 +59,7 @@
 				ret.a = 1;
 				return ret;
 			}
+			*/
 
             IO vert(APPInput vertex) {
                 IO output;
@@ -67,36 +69,36 @@
 				output.normal = vertex.normal;
 				output.worldNormal = normalize( UnityObjectToWorldNormal( vertex.normal ));
 
-				float wobbleX = sin(_Time*26) / 30 + 1;
-				float wobbleY = cos(_Time*42) / 35 + 1;
-				float wobbleZ = sin(_Time*27) / 33 + 1;
-				float3 position = vertex.position;
-				position.x *= wobbleX;
-				position.y *= wobbleY;
-				position.z *= wobbleZ;
-				output.position = UnityObjectToClipPos( position );
+				output.position = UnityObjectToClipPos( vertex.position );
 
 				float4 grabPosition = vertex.position;
-				output.normal = vertex.normal;
-				output.worldPosition = mul(unity_ObjectToWorld,vertex.position);
-				output.uv = vertex.uv;
-                return output;
+				grabPosition = UnityObjectToClipPos(grabPosition);
+				output.grabPosition = ComputeGrabScreenPos(grabPosition);
+
+				return output;
             }
+
+			float2x2 rotate2(float rot)
+			{
+				float sinRot;
+				float cosRot;
+				sincos(rot, sinRot, cosRot);
+				return float2x2(cosRot, -sinRot, sinRot, cosRot);
+			}
 
             half4 frag(IO vertex) : SV_Target
             {
-				float3 viewDirection = normalize(vertex.worldPosition - _WorldSpaceCameraPos);
-                half4 baseColor = tex2Dproj(_Background, vertex.grabPosition);
-				float4 bubbleColor = float4(1, .8, .8, 1);
-				float offset = sin(_Time*5)+1;
-				float shift = dot( (vertex.uv.x-offset), (vertex.uv.y-offset)) * 2880 + (_Time*1000);
-				bubbleColor = shiftColor(bubbleColor,shift);
+				float rotAmt = distance(vertex.objectPosition,float3(0,0,0))*1000;
+				float2 uv = vertex.grabPosition.xy / vertex.grabPosition.w;
+				uv -= .5;
+				float2x2 rotMat = rotate2(rotAmt);
+				uv = mul(rotMat,uv);
+				uv += .5;
 				
-				//apply bubble edge:
-				float value = -dot(viewDirection, vertex.worldNormal)*2 + .5; 
-				bubbleColor *= value;
-
-				baseColor.rgb*=bubbleColor.rgb;
+				float3 viewDirection = normalize(vertex.worldPosition - _WorldSpaceCameraPos);
+				half4 baseColor = tex2D(_Background, uv);
+				
+					
                 return baseColor;
             }
             ENDCG

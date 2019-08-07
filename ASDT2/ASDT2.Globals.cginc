@@ -73,6 +73,7 @@ PIO adjustProcess(PIO process, uint isFrontFace)
 {
 	if (!isFrontFace){
 		process.normal = -process.normal;
+		process.worldNormal = -process.worldNormal;
 	}
 	//get the camera position to calculate view direction and then get the direction from the camera to the pixel.
 	process.viewDirection = normalize(process.worldPosition - _WorldSpaceCameraPos);
@@ -118,7 +119,6 @@ fixed4 applyCut( fixed4 color ){
 }
 
 fixed4 applyFresnel( PIO process, fixed4 inColor ){
-	float3 viewDirection = normalize(process.worldPosition - _WorldSpaceCameraPos);
 	float val = saturate(-dot(process.viewDirection, process.worldNormal));
 	float rim = 1 - val * _FresnelRetract;
 	rim= max(0,rim);
