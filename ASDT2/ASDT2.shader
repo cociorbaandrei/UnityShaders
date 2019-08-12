@@ -52,9 +52,8 @@
 			
 			#pragma target 5.0
 			#pragma vertex vert
-			#pragma fragment frag novertexlights nolighting
-
-			#pragma multi_compile_prepassfinal
+			#pragma fragment frag
+			#pragma multi_compile
 
 			#include "ASDT2.Globals.cginc"
 			#include "ASDT2.FowardBase.cginc"

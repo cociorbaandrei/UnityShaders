@@ -89,7 +89,6 @@
 				output.normal = vertex.normal;
 				output.worldPosition = mul(unity_ObjectToWorld,vertex.position);
 				output.grabPosition = ComputeGrabScreenPos(UnityObjectToClipPos(vertex.position));
-				output.uv = vertex.uv;
                 return output;
             }
 

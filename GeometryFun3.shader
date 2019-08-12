@@ -59,7 +59,7 @@ Shader "Skuld/Geometry Fun 3"
 			#pragma geometry geom
 			#pragma fragment frag novertexlights nolighting
 
-			#pragma multi_compile_prepassfinal
+			#pragma multi_compile
 
 			#include "ASDT2/ASDT2.Globals.cginc"
 			#include "ASDT2/ASDT2.FowardBase.cginc"

@@ -4,16 +4,30 @@
 		_MainTex ("Albedo (RGB)", 2D) = "white" {}
 		_Speed ("Scroll Speed", Float ) = 1
 		[KeywordEnum(Horizontal,Vertical)] _Direction ("Direction",Float) = 0
+
+		[space]
+		[Enum(UnityEngine.Rendering.BlendMode)] _SrcBlend("Source Blend", Float) = 1                 // "One"
+		[Enum(UnityEngine.Rendering.BlendMode)] _DstBlend("Destination Blend", Float) = 0            // "Zero"
+		[Enum(UnityEngine.Rendering.BlendOp)] _BlendOp("Blend Operation", Float) = 0                 // "Add"
+		[Enum(UnityEngine.Rendering.CullMode)] _CullMode("Cull Mode", Float) = 2                     // "Back"
+		[Toggle] _ZWrite("Z-Write",Float) = 1
+
 	}
 	SubShader {
-		Tags { "RenderType"="Opaque" "Queue"="Geometry+1" }
+		Tags { "RenderType"="Clipping" "Queue"="Transparent" }
+		
+		Blend[_SrcBlend][_DstBlend]
+        BlendOp[_BlendOp]
+        Cull[_CullMode]
+		Lighting Off
+		SeparateSpecular Off
+		ZWrite [_ZWrite]
 
 		CGPROGRAM
 		// Physically based Standard lighting model, and enable shadows on all light types
-		#pragma surface surf Fuck
+		#pragma surface surf Fuck alpha:fade fadeTransition
 
-		// Use shader model 3.0 target, to get nicer looking lighting
-		#pragma target 3.0
+		#pragma target 5.0
 
 		sampler2D _MainTex;
 		fixed4 _Color;

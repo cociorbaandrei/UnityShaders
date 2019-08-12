@@ -54,7 +54,7 @@
 			#pragma vertex vertfx
 			#pragma fragment fragsfx
 
-			#pragma multi_compile_prepassfinal
+			#pragma multi_compile
 			#define FORWARDBASE
 
 			#include "ASDT2/ASDT2.Globals.cginc"
@@ -75,7 +75,7 @@
 			#pragma vertex vertfx
 			#pragma fragment fragsfx
 
-			#pragma multi_compile_prepassfinal
+			#pragma multi_compile
 			#define FORWARDBASE
 
 			#include "ASDT2/ASDT2.Globals.cginc"

@@ -13,12 +13,14 @@
 		
 		[Toggle] _fadeByDistance("Fade By Distance", Float) = 0
 		[Toggle] _invert("inverted", Float) = 0
-		_Radius("Fade Radius", Float)=100	
+		_Radius("Fade Radius", Float)=100			
+		[Enum(UnityEngine.Rendering.CullMode)] _CullMode("Cull Mode", Float) = 2                     // "Back"
 	}
 
 	SubShader {
 		Tags { "RenderType"="Clipping" "Queue"="Transparent" }
-		
+		Cull[_CullMode]
+        
 		CGPROGRAM
 		
 		/*this is how you control the lighting and alpha. tags does nothing. */
@@ -26,7 +28,7 @@
 		#pragma surface surf NoLighting alpha:fade fadeTransition
 		#pragma target 3.0
 
-        sampler2D _MainTex;
+		sampler2D _MainTex;
         half _Glossiness;
         half _Metallic;
 		fixed4 _Color;
