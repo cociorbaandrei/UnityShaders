@@ -46,5 +46,7 @@ fixed4 frag( PIO process, uint isFrontFace : SV_IsFrontFace ) : SV_Target
 		color = applyMaskLayer(process, color);
 	}
 
+	color.a = 1;
+
 	return color;
 }

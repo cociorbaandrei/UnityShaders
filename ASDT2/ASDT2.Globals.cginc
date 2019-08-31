@@ -99,8 +99,8 @@ float applyToonEdge( PIO process, float brightness){
 	}
 
 	//apply range, min and max:
-	brightness = brightness * _ShadeRange + (1 - _ShadeRange);
 	brightness = max(_ShadeMin,brightness);
+	brightness = brightness * _ShadeRange + (1 - _ShadeRange);
 	brightness = min(_ShadeMax,brightness);
 
 	brightness = saturate(brightness * attenuation);
