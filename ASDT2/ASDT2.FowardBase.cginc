@@ -30,7 +30,9 @@ fixed4 frag( PIO process, uint isFrontFace : SV_IsFrontFace ) : SV_Target
 {
 	//get the uv coordinates and set the base color.
 	fixed4 color = tex2D( _MainTex, process.uv );
-	clip(color.a - _TCut);
+	#ifdef MODE_TCUT
+		clip(color.a - _TCut);
+	#endif
 
 	process = adjustProcess(process, isFrontFace);
 	color = applyFresnel(process, color);
@@ -46,7 +48,12 @@ fixed4 frag( PIO process, uint isFrontFace : SV_IsFrontFace ) : SV_Target
 		color = applyMaskLayer(process, color);
 	}
 
-	color.a = 1;
+	#ifdef MODE_TCUT 
+		color.a = 1;
+	#endif
+	#ifdef MODE_OPAQUE
+		color.a = 1;
+	#endif
 
 	return color;
 }

@@ -27,7 +27,6 @@
 		[Toggle] _MaskRainbow("Rainbow Effect", Float) = 0
 		_MaskGlowSpeed("Glow Speed",Range(0,10)) = 1
 		_MaskGlowSharpness("Glow Sharpness",Range(1,200)) = 1.0
-
 	}
 
 	SubShader {
@@ -52,6 +51,8 @@
 			#pragma fragment frag
 			#pragma multi_compile
 
+			#define MODE_OPAQUE
+
 			#include "ASDT2.Globals.cginc"
 			#include "ASDT2.FowardBase.cginc"
 
@@ -74,6 +75,9 @@
 			
 			#pragma multi_compile_fwdadd_fullshadows
 
+			#define MODE_OPAQUE
+
+
 			#include "ASDT2.Globals.cginc"
 			#include "ASDT2.FowardAdd.cginc"
 
@@ -94,6 +98,8 @@
 			#pragma fragment frag
 			
 			#pragma multi_compile_fwdadd_fullshadows
+
+			#define MODE_OPAQUE
 
 			#include "ASDT2.Globals.cginc"
 			#include "ASDT2.shadows.cginc"

@@ -1,4 +1,4 @@
-﻿Shader "Skuld/Advance Shading + Dual Texture 2"
+﻿Shader "Skuld/Advance Shading + Dual Texture 2 Transparent"
 {
 	Properties {
 		[space]
@@ -17,7 +17,6 @@
 
 		[space]
 		_MainTex("Base Layer", 2D) = "black" {}
-		_TCut("Transparent Cutout",Range(0,1)) = 1
 		_FresnelColor("Fresnel Color", Color)=(1, 1, 1, 1)
 		_FresnelRetract("Fresnel Retract", Range(0,10)) = 0.5
 
@@ -28,17 +27,14 @@
 		[Toggle] _MaskRainbow("Rainbow Effect", Float) = 0
 		_MaskGlowSpeed("Glow Speed",Range(0,10)) = 1
 		_MaskGlowSharpness("Glow Sharpness",Range(1,200)) = 1.0
-		[hidden]
-		_Mode("",float) = 0
 	}
 
 	SubShader {
-		Tags { "RenderType"="TransparentCutout" "Queue"="Geometry+1"}
+		Tags { "RenderType"="Transparent" "Queue"="Transparent"}
 
         Blend[_SrcBlend][_DstBlend]
         BlendOp[_BlendOp]
         Cull[_CullMode]
-		AlphaTest Greater[_TCut] //cut amount
 		Lighting Off
 		SeparateSpecular Off
 		ZWrite [_ZWrite]
@@ -55,8 +51,8 @@
 			#pragma vertex vert
 			#pragma fragment frag
 			#pragma multi_compile
-
-			#define MODE_TCUT
+			
+			#define MODE_TRANS
 
 			#include "ASDT2.Globals.cginc"
 			#include "ASDT2.FowardBase.cginc"
@@ -79,8 +75,8 @@
 			#pragma fragment frag
 			
 			#pragma multi_compile_fwdadd_fullshadows
-
-			#define MODE_TCUT
+		
+			#define MODE_TRANS
 
 			#include "ASDT2.Globals.cginc"
 			#include "ASDT2.FowardAdd.cginc"
@@ -103,7 +99,7 @@
 			
 			#pragma multi_compile_fwdadd_fullshadows
 
-			#define MODE_TCUT
+			#define MODE_TRANS
 
 			#include "ASDT2.Globals.cginc"
 			#include "ASDT2.shadows.cginc"
