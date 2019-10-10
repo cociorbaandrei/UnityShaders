@@ -1,10 +1,16 @@
-﻿Shader "Skuld/Carpet"
+﻿// Upgrade NOTE: replaced tex2D unity_Lightmap with UNITY_SAMPLE_TEX2D
+
+// Upgrade NOTE: commented out 'sampler2D unity_Lightmap', a built-in variable
+
+Shader "Skuld/Carpet"
 {
 	Properties
 	{
 		_Color ("Color",Color) = (1,0,0,1)
 		_MainTex ("Texture", 2D) = "white" {}
 		_Height ("Height",float) = 1
+		_Rotation ("Rotation Amount", range(0,6.3)) = .1
+		_Radius ("Radius",range(0,.5)) = .5
 	}
 	SubShader
 	{
@@ -21,28 +27,34 @@
 			#pragma fragment frag
 			#pragma geometry geom
 			// make fog work
-			#pragma multi_compile_fog
-			
+			#pragma multi_compile_fwdbase
+
+			#include "UnityPBSLighting.cginc"
 			#include "UnityCG.cginc"
 
 			struct appdata
 			{
 				float4 vertex : POSITION;
 				float2 uv : TEXCOORD0;
+				float2 lmuv : TEXCOORD1;
 			};
 
 			struct v2f
 			{
 				float2 uv : TEXCOORD0;
-				UNITY_FOG_COORDS(1)
+				float2 lmuv : TEXCOORD1;
 				float4 vertex : SV_POSITION;
 				float4 extras : TEXCOORD8;
 			};
 
 			sampler2D _MainTex;
 			float4 _MainTex_ST;
-			float4 _Color;
+			// sampler2D unity_Lightmap;
+			// half4 unity_LightmapST;
+            float4 _Color;
 			float _Height;
+			float _Rotation;
+			float _Radius;
 			
 			v2f vert (appdata v)
 			{
@@ -51,7 +63,7 @@
 				o.vertex = v.vertex;
 
 				o.uv = TRANSFORM_TEX(v.uv, _MainTex);
-				UNITY_TRANSFER_FOG(o,o.vertex);
+				o.lmuv = v.lmuv;
 				return o;
 			}
 			
@@ -70,7 +82,6 @@
 						vert.vertex = UnityObjectToClipPos(vert.vertex);
 						tristream.Append(vert);
 					}
-					tristream.RestartStrip();
 				} else {
 					for ( i = 0; i < 3; i++){
 						vert = input[i];
@@ -85,17 +96,24 @@
 			{
 				// sample the texture
 				fixed4 col = tex2D(_MainTex, i.uv);
+				fixed3 lmcol = DecodeLightmap(UNITY_SAMPLE_TEX2D(unity_Lightmap,i.lmuv));
+				col.rgb *= lmcol;
 				//s is the instanceID scaled float value.
 				float s = ( i.extras[0] ) / 32;
 				col *= _Color * s;
 				float u = ( ( i.uv[0] * 100 ) % 100) / 100;
 				float v = ( ( i.uv[1] * 100 ) % 100) / 100;
-				float min = s / 2;
-				float max = 1 - min;
+				float uc = ( s * cos(i.uv[0]*_Rotation)*_Radius)+.5;
+				float vc = ( s * sin(i.uv[1]*i.uv[0]*_Rotation)*_Radius)+.5;
+				float is = 1-s;
+				float umin = uc - is;
+				float umax = uc + is;
+				float vmin = vc - is;
+				float vmax = vc + is;
 
 				//clip the carpet here based on UV.
-				if ( u < min || u > max ||
-					v < min || v > max ){
+				if ( u < umin || u > umax ||
+					v < vmin || v > vmax ){
 					clip(-1);
 				}
 
