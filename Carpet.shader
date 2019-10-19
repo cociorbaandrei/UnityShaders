@@ -9,8 +9,12 @@ Shader "Skuld/Carpet"
 		_Color ("Color",Color) = (1,0,0,1)
 		_MainTex ("Texture", 2D) = "white" {}
 		_Height ("Height",float) = 1
-		_Rotation ("Rotation Amount", range(0,6.3)) = .1
+		[KeywordEnum(XAxis, YAxis, ZAxis)] _Direction ("Direction",int) = 0
+		_Size( "Fuzzy Square Size", float ) = 0
+		_XRand ("X Randomness", float) = 1
+		_YRand ("Y Randomness", float) = 1
 		_Radius ("Radius",range(0,.5)) = .5
+		_CMin ("Minimum Brightness",range(0,1)) = 0
 	}
 	SubShader
 	{
@@ -43,6 +47,7 @@ Shader "Skuld/Carpet"
 			{
 				float2 uv : TEXCOORD0;
 				float2 lmuv : TEXCOORD1;
+				float3 pixelPos : TEXCOORD2;
 				float4 vertex : SV_POSITION;
 				float4 extras : TEXCOORD8;
 			};
@@ -53,15 +58,19 @@ Shader "Skuld/Carpet"
 			// half4 unity_LightmapST;
             float4 _Color;
 			float _Height;
-			float _Rotation;
+			float _Size;
+			float _XRand;
+			float _YRand;
 			float _Radius;
+			float _CMin;
+			int _Direction;
 			
 			v2f vert (appdata v)
 			{
 				v2f o;
 				//o.vertex = UnityObjectToClipPos(v.vertex);
 				o.vertex = v.vertex;
-
+				o.pixelPos = mul(unity_ObjectToWorld, v.vertex);
 				o.uv = TRANSFORM_TEX(v.uv, _MainTex);
 				o.lmuv = v.lmuv;
 				return o;
@@ -77,7 +86,17 @@ Shader "Skuld/Carpet"
 					for ( i = 0; i < 3; i++ ){
 						float s = ( 32-instanceID ) / 32;
 						vert = input[i];
-						vert.vertex.z += instanceID * _Height/10000;
+						switch(_Direction){
+							case 0:
+								vert.vertex.x += instanceID * _Height/10000;
+								break;
+							case 1:
+								vert.vertex.y += instanceID * _Height/10000;
+								break;
+							case 2:
+								vert.vertex.z += instanceID * _Height/10000;
+								break;
+						}
 						vert.extras[0] = instanceID;
 						vert.vertex = UnityObjectToClipPos(vert.vertex);
 						tristream.Append(vert);
@@ -96,24 +115,44 @@ Shader "Skuld/Carpet"
 			{
 				// sample the texture
 				fixed4 col = tex2D(_MainTex, i.uv);
+				col *= _Color;
 				fixed3 lmcol = DecodeLightmap(UNITY_SAMPLE_TEX2D(unity_Lightmap,i.lmuv));
 				col.rgb *= lmcol;
-				//s is the instanceID scaled float value.
-				float s = ( i.extras[0] ) / 32;
-				col *= _Color * s;
-				float u = ( ( i.uv[0] * 100 ) % 100) / 100;
-				float v = ( ( i.uv[1] * 100 ) % 100) / 100;
-				float uc = ( s * cos(i.uv[0]*_Rotation)*_Radius)+.5;
-				float vc = ( s * sin(i.uv[1]*i.uv[0]*_Rotation)*_Radius)+.5;
-				float is = 1-s;
-				float umin = uc - is;
-				float umax = uc + is;
-				float vmin = vc - is;
-				float vmax = vc + is;
 
-				//clip the carpet here based on UV.
-				if ( u < umin || u > umax ||
-					v < vmin || v > vmax ){
+				
+				float2 cut;
+				float2 offset;
+				float range = 1-(i.extras[0] / 31);
+				float iRange = i.extras[0] / 31;
+				col.rgb *=  iRange * (1-_CMin) + _CMin;
+
+				switch(_Direction){
+					case 0:
+						cut.x = i.pixelPos.y;
+						cut.y = i.pixelPos.z;
+						break;
+					case 1:
+						cut.x = i.pixelPos.x;
+						cut.y = i.pixelPos.z;
+						break;
+					case 2:
+						cut.x = i.pixelPos.x;
+						cut.y = i.pixelPos.y;
+						break;
+				}
+
+				offset.x = cos(cut.x *_XRand) * _Radius * iRange;
+				offset.y = cos(cut.y *_YRand) * _Radius * iRange;
+
+				cut.x = cos( cut.x / _Size );
+				cut.y = cos( cut.y / _Size );
+
+				
+
+				if ( cut.x < -range + offset.x || cut.x > range + offset.x ){
+					clip(-1);
+				}
+				if ( cut.y < -range + offset.y || cut.y > range + offset.y ){
 					clip(-1);
 				}
 
