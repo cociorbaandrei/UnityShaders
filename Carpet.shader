@@ -6,11 +6,13 @@ Shader "Skuld/Carpet"
 {
 	Properties
 	{
+		_Count ("Layers",range(0,32)) = 32
 		_Color ("Color",Color) = (1,0,0,1)
 		_MainTex ("Texture", 2D) = "white" {}
 		_Height ("Height",float) = 1
 		_Rotation ("Rotation Amount", range(0,6.3)) = .1
 		_Radius ("Radius",range(0,.5)) = .5
+			
 	}
 	SubShader
 	{
@@ -55,6 +57,7 @@ Shader "Skuld/Carpet"
 			float _Height;
 			float _Rotation;
 			float _Radius;
+			int _Count;
 			
 			v2f vert (appdata v)
 			{
@@ -70,21 +73,13 @@ Shader "Skuld/Carpet"
 			[instance(32)]
 			[maxvertexcount(3)]
 			void geom (triangle v2f input[3], inout TriangleStream<v2f> tristream, uint instanceID : SV_GSInstanceID){
-				int i = 0;
-				v2f vert;
+				if (instanceID < _Count ){
+					int i = 0;
+					v2f vert;
 
-				if ( instanceID > 0 ){
 					for ( i = 0; i < 3; i++ ){
-						float s = ( 32-instanceID ) / 32;
 						vert = input[i];
 						vert.vertex.z += instanceID * _Height/10000;
-						vert.extras[0] = instanceID;
-						vert.vertex = UnityObjectToClipPos(vert.vertex);
-						tristream.Append(vert);
-					}
-				} else {
-					for ( i = 0; i < 3; i++){
-						vert = input[i];
 						vert.extras[0] = instanceID;
 						vert.vertex = UnityObjectToClipPos(vert.vertex);
 						tristream.Append(vert);
@@ -99,7 +94,7 @@ Shader "Skuld/Carpet"
 				fixed3 lmcol = DecodeLightmap(UNITY_SAMPLE_TEX2D(unity_Lightmap,i.lmuv));
 				col.rgb *= lmcol;
 				//s is the instanceID scaled float value.
-				float s = ( i.extras[0] ) / 32;
+				float s = ( i.extras[0] ) / _Count;
 				col *= _Color * s;
 				float u = ( ( i.uv[0] * 100 ) % 100) / 100;
 				float v = ( ( i.uv[1] * 100 ) % 100) / 100;

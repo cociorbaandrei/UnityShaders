@@ -12,6 +12,7 @@
 		[Enum(UnityEngine.Rendering.BlendMode)] _SrcBlend("Source Blend", Float) = 1                 // "One"
 		[Enum(UnityEngine.Rendering.BlendMode)] _DstBlend("Destination Blend", Float) = 0            // "Zero"
 		[Enum(UnityEngine.Rendering.BlendOp)] _BlendOp("Blend Operation", Float) = 0                 // "Add"
+		_TCut("Transparent Cut",Range(0,1)) = .1
 
 		[space]
 		_MainTex("Base Layer", 2D) = "black" {}
@@ -28,11 +29,11 @@
 		[space]
 		_BumpTex("Bump Layer", 2D) = "black" {}
 		_BumpScale("Bump Amount", Range(0,1)) = 1.0
-
+	
 	}
 
 	SubShader {
-		Tags { "RenderType"="Transparent" "Queue"="Transparent"}
+		Tags { "RenderType"="TransparentCutout" "Queue"="Geometry+1"}
 
         Blend[_SrcBlend][_DstBlend]
         BlendOp[_BlendOp]
@@ -56,6 +57,7 @@
 
 			#pragma multi_compile
 			#define FORWARDBASE
+			#define MODE_TCUT
 
 			#include "ASDT2.Globals.cginc"
 			#include "ASDT2.FowardBase.cginc"
@@ -77,6 +79,7 @@
 
 			#pragma multi_compile
 			#define FORWARDBASE
+			#define MODE_TCUT
 
 			#include "ASDT2.Globals.cginc"
 			#include "ASDT2.FowardBase.cginc"
@@ -99,6 +102,7 @@
 			#pragma fragment fragfxfa
 			
 			#pragma multi_compile_fwdadd_fullshadows
+			#define MODE_TCUT
 
 			#include "ASDT2.Globals.cginc"
 			#include "ASDT2.FowardAdd.cginc"
@@ -121,6 +125,7 @@
 			#pragma fragment frag
 			
 			#pragma multi_compile_fwdadd_fullshadows
+			#define MODE_TCUT
 
 			#include "ASDT2.Globals.cginc"
 			#include "ASDT2.shadows.cginc"
