@@ -61,8 +61,8 @@ Shader "Skuld/Geometry Fun 3"
 
 			#pragma multi_compile
 
-			#include "ASDT2/ASDT2.Globals.cginc"
-			#include "ASDT2/ASDT2.FowardBase.cginc"
+			#include "../ASDT2/ASDT2.Globals.cginc"
+			#include "../ASDT2/ASDT2.FowardBase.cginc"
 			
 			float _Step;
 			float _Distance;
