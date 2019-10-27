@@ -69,7 +69,8 @@
 				o.vertex = v.vertex;
 				o.pixelPos = mul(unity_ObjectToWorld, v.vertex);
 				o.uv = TRANSFORM_TEX(v.uv, _MainTex);
-				o.lmuv = v.lmuv;
+				//o.lmuv = v.lmuv;
+				o.lmuv = v.lmuv.xy * unity_LightmapST.xy + unity_LightmapST.zw;
 				return o;
 			}
 			
