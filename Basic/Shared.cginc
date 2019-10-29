@@ -49,6 +49,7 @@ fixed4 frag (v2f i, uint isFrontFace : SV_IsFrontFace ) : SV_Target
 {
 	//base Color:
 	float4 textureCol = tex2D(_MainTex, i.uv);// sample the texture first, to determine cut, to save effort.
+	float a = textureCol.a;
 #ifdef MODE_TCUT
 	clip(textureCol.a - _TCut);
 #endif
@@ -99,6 +100,7 @@ fixed4 frag (v2f i, uint isFrontFace : SV_IsFrontFace ) : SV_Target
 	if (!_DisableFog){
 		UNITY_APPLY_FOG(i.fogCoord, col);
 	}
+	col.a = a;
 	return col;
 }
 
