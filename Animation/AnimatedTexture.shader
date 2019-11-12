@@ -7,6 +7,7 @@
 		_UTiles("Columns", Int) = 1
 		_VTiles("Rows", Int) = 1
 		_Frames("Total Frames", Int) = 1
+		_StartFrame("Start Frame",Int) = 0
 		_FrameTime("Length of Time to Show Each Frame in Seconds",float) = 1.0
 		[Toggle] _TopDown("Top Down",float) = 0
 		[Toggle] _Reverse("Reverse",float) = 0
@@ -29,6 +30,7 @@
 		int _VTiles;
 		int _Frames;
 		float _FrameTime;
+		int _StartFrame;
 		float4 _Color;
 		float _TransRange;
 		float _Reverse;
@@ -47,7 +49,7 @@
 		{
 			//frame
 			float2 uvs = IN.uv_MainTex;
-			int TInt = _Time * 20 / _FrameTime;
+			int TInt = _Time * 20 / _FrameTime + _StartFrame;
 			int frame = TInt % _Frames;
 			if (_Reverse == 1){
 				frame = _Frames - frame - 1;

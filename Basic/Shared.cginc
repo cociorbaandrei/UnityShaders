@@ -69,7 +69,7 @@ fixed4 frag (v2f i, uint isFrontFace : SV_IsFrontFace ) : SV_Target
 
 	UNITY_LIGHT_ATTENUATION(attenuation, 0, i.worldPosition);
 
-	float finalBrightness = saturate( attenuation * lightBright );
+	float finalBrightness = saturate( attenuation * lightBright ) * a;
 #else
 	float lightBright = dot(_WorldSpaceLightPos0, i.worldNormal);
 	float finalBrightness = saturate( lightBright );
