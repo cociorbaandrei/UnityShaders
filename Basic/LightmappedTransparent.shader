@@ -22,7 +22,7 @@
 		LOD 10
 
 		Blend[_SrcBlend][_DstBlend]
-        BlendOp[_BlendOp]
+        //BlendOp[_BlendOp]
         Cull[_CullMode]
 		Lighting Off
 		SeparateSpecular Off
@@ -37,6 +37,7 @@
 			// make fog work
 			#pragma multi_compile_fog
 			#pragma multi_compile_instancing
+			#define TRANSPARENT
 			
 			#include "UnityCG.cginc"
 			#include "AutoLight.cginc"
@@ -59,6 +60,7 @@
 			#pragma multi_compile_fog
 			#pragma multi_compile_fwdadd_fullshadows
 			#define BASIC_FWD_ADD
+			#define TRANSPARENT
 
 			#include "UnityCG.cginc"
 			#include "AutoLight.cginc"
@@ -80,6 +82,7 @@
 			#pragma fragment shadowFrag
 			
 			#pragma multi_compile_fwdadd_fullshadows
+			#define TRANSPARENT
 
 			#include "shared.cginc"
 

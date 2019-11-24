@@ -100,7 +100,11 @@ fixed4 frag (v2f i, uint isFrontFace : SV_IsFrontFace ) : SV_Target
 	if (!_DisableFog){
 		UNITY_APPLY_FOG(i.fogCoord, col);
 	}
-	col.a = a;
+#ifdef TRANSPARENT
+	col.a = a * _Color.a;
+#else
+	col.a = 1;
+#endif
 	return col;
 }
 
