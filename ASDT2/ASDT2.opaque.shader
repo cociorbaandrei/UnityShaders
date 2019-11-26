@@ -9,9 +9,6 @@
 		_ShadeMin("Min Brightness",Range(0,1)) = 0.0
 
 		[space]
-		[Enum(UnityEngine.Rendering.BlendMode)] _SrcBlend("Source Blend", Float) = 1                 // "One"
-		[Enum(UnityEngine.Rendering.BlendMode)] _DstBlend("Destination Blend", Float) = 0            // "Zero"
-		[Enum(UnityEngine.Rendering.BlendOp)] _BlendOp("Blend Operation", Float) = 0                 // "Add"
 		[Enum(UnityEngine.Rendering.CullMode)] _CullMode("Cull Mode", Float) = 2                     // "Back"
 		[Toggle] _ZWrite("Z-Write",Float) = 1
 
@@ -32,8 +29,6 @@
 	SubShader {
 		Tags { "RenderType"="Opaque" "Queue"="Geometry+1"}
 
-        Blend[_SrcBlend][_DstBlend]
-        BlendOp[_BlendOp]
         Cull[_CullMode]
 		Lighting Off
 		SeparateSpecular Off
@@ -46,7 +41,7 @@
 			#include "AutoLight.cginc"
 			#include "UnityPBSLighting.cginc"
 			
-			#pragma target 5.0
+			#pragma target 3.5
 			#pragma vertex vert
 			#pragma fragment frag
 			#pragma multi_compile
