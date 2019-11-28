@@ -10,7 +10,6 @@
 		[space]
 		[Enum(UnityEngine.Rendering.BlendMode)] _SrcBlend("Source Blend", Float) = 1                 // "One"
 		[Enum(UnityEngine.Rendering.BlendMode)] _DstBlend("Destination Blend", Float) = 0            // "Zero"
-		[Enum(UnityEngine.Rendering.BlendOp)] _BlendOp("Blend Operation", Float) = 0                 // "Add"
 		[Enum(UnityEngine.Rendering.CullMode)] _CullMode("Cull Mode", Float) = 2                     // "Back"
 		[Toggle] _ZWrite("Z-Write",Float) = 1
 		[Toggle] _DisableLightmap("Disable Lightmap",Float) = 0
@@ -22,7 +21,6 @@
 		LOD 10
 
 		Blend[_SrcBlend][_DstBlend]
-        //BlendOp[_BlendOp]
         Cull[_CullMode]
 		Lighting Off
 		SeparateSpecular Off
