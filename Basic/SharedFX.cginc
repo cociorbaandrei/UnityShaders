@@ -94,11 +94,14 @@ fixed4 frag (v2f i, uint isFrontFace : SV_IsFrontFace ) : SV_Target
 	//foward pass, just blend light with texture.
 	if (!_Unlit1){
 		tex1Col.rgb = tex1Col.rgb * lightCol.rgb;
+	} else {
+		tex1Col = 0;
 	}
 	if (!_Unlit2){
 		tex2Col.rgb = tex2Col.rgb * lightCol.rgb;
-	}
-	//col.rgb = col.rgb * lightCol.rgb;
+	} else {
+		tex2Col = 0;
+	} 
 #else 
 	//base pass get and add lightmap:
 	float3 lightmapCol = DecodeLightmap( UNITY_SAMPLE_TEX2D( unity_Lightmap, i.lmuv ) );

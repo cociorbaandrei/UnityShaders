@@ -77,48 +77,6 @@
 
 			ENDCG
 		}
-		//layer 2
-		Pass
-		{
-			Tags { "LightMode" = "ForwardBase"}
-			CGPROGRAM
-			#pragma vertex vert
-			#pragma fragment frag
-			// make fog work
-			#pragma multi_compile_fog
-			#pragma multi_compile_instancing
-			#define LAYER_2
-			
-			#include "UnityCG.cginc"
-			#include "AutoLight.cginc"
-			#include "Lighting.cginc"
-			#include "UnityPBSLighting.cginc"
-			#include "SharedFX.cginc"
-
-			ENDCG
-		}
-		Pass
-		{
-			Tags { "LightMode" = "ForwardAdd"}
-			Blend One One
-
-			CGPROGRAM
-			#pragma vertex vert
-			#pragma fragment frag
-			// make fog work
-			#pragma multi_compile_fog
-			#pragma multi_compile_fwdadd_fullshadows
-			#define BASIC_FWD_ADD
-			#define LAYER_2
-
-			#include "UnityCG.cginc"
-			#include "AutoLight.cginc"
-			#include "Lighting.cginc"
-			#include "UnityPBSLighting.cginc"
-			#include "SharedFX.cginc"
-
-			ENDCG
-		}
 			
 		Pass {
 			Tags { "LightMode" = "ShadowCaster"}
