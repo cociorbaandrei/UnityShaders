@@ -8,6 +8,9 @@
 
 		_Tex1 ("Layer 1 Texture", 2D) = "white" {}
 		[Toggle]_Unlit1("Layer 1 Unlit",Float) = 0
+		_NormalTex1("Layer 1 Normal Map", 2D) = "black" {}
+		_NormalScale1("Layer 1 Normal Amount", Range(0,1)) = 1.0
+		_Smoothness1("Layer 1 Smoothness", Range(0,1)) = .5
 
 		[space]
 		_Tex2 ("Layer 2 Texture", 2D) = "white" {}
@@ -18,11 +21,15 @@
 		_GlowSharpness("Layer 2 Glow Sharpness",Range(0,1)) = 0
 		_GlowColor ("Layer 2 Glow Color",Color) = (1,1,1,1)
 		[KeywordEnum(X,Y,Z)] _GlowDirection("Layer 2 Glow Direction",Float) = 0
+		
 
 		[space]
 		[Enum(UnityEngine.Rendering.CullMode)] _CullMode("Cull Mode", Float) = 2                     // "Back"
 		[Toggle] _ZWrite("Z-Write",Float) = 1
 		[Toggle] _DisableLightmap("Disable Lightmap",Float) = 0
+		[Toggle] _DisableNormalmap("Disable Normalmap",Float) = 0
+		[Toggle] _DisableReflectionProbe("Disable Reflection Probe",Float) = 0
+		[Toggle] _DisableReflectionProbeBlending("Disable Reflection Probe Blending",Float) = 0
 		[Toggle] _DisableFog("Disable Fog",Float) = 0
 	}
 	SubShader

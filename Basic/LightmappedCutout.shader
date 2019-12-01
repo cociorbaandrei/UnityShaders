@@ -7,6 +7,9 @@
 		_Brightness ("Brightness", Range(0,10) ) = 1.0
 		_LMBrightness ("Added Lightmap Brightness", Range(-1,1) ) = 1.0
 		_TCut("Transparent Cutout",Range(0,1)) = 1
+		_NormalTex("Normal Map", 2D) = "black" {}
+		_NormalScale("Normal Amount", Range(0,1)) = 1.0
+		_Smoothness("Smoothness", Range(0,1)) = 0
 
 		[space]
 		[Enum(UnityEngine.Rendering.BlendMode)] _SrcBlend("Source Blend", Float) = 1                 // "One"
@@ -15,6 +18,9 @@
 		[Enum(UnityEngine.Rendering.CullMode)] _CullMode("Cull Mode", Float) = 2                     // "Back"
 		[Toggle] _ZWrite("Z-Write",Float) = 1
 		[Toggle] _DisableLightmap("Disable Lightmap",Float) = 0
+		[Toggle] _DisableNormalmap("Disable Normalmap",Float) = 0
+		[Toggle] _DisableReflectionProbe("Disable Reflection Probe",Float) = 0
+		[Toggle] _DisableReflectionProbeBlending("Disable Reflection Probe Blending",Float) = 0
 		[Toggle] _DisableFog("Disable Fog",Float) = 0
 	}
 	SubShader

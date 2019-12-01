@@ -11,18 +11,27 @@ struct appdata
 
 struct v2f
 {
+	float4 position : SV_POSITION;
+	float4 objectPosition : POSTION0;
+	float3 worldPosition : POSTION1;
+
 	float3 normal : NORMAL;
+	float3 worldNormal : NORMAL1;
+	float3 viewDirection : NORMAL2;
+	float3 binormal : BINORMAL0;
+	float4 tangent : TANGENT;
+
 	float2 uv : TEXCOORD0;
 	float2 lmuv : TEXCOORD1;
-	float4 objectPosition : TEXCOORD6;
-	float3 worldPosition : TEXCOORD7;
-	float3 worldNormal : TEXCOORD8;
+
 	UNITY_FOG_COORDS(2)
-	float4 position : SV_POSITION;
 };
 fixed4 _Color;
 bool _DisableLightmap;
+bool _DisableNormalmap;
 bool _DisableFog;
+bool _DisableReflectionProbe;
+bool _DisableReflectionProbeBlending;
 float _Brightness;
 float _LMBrightness;
 float _TCut;
@@ -41,7 +50,74 @@ float4 _Tex2_ST;
 bool _Unlit2;
 bool _Glow2;
 fixed4 _GlowColor;
+sampler2D _NormalTex1;
+sampler2D _NormalTex1_ST;
+float _NormalScale1;
 
+float _Smoothness1;
+
+float3 CreateBinormal (float3 normal, float3 tangent, float binormalSign) {
+	return cross(normal, tangent.xyz) *
+		(binormalSign * unity_WorldTransformParams.w);
+}
+
+v2f applyNormalMap( v2f o ){
+	float3 tangentSpaceNormal =
+		UnpackScaleNormal(tex2D(_NormalTex1, o.uv), _NormalScale1);
+		o.binormal = CreateBinormal(o.worldNormal, o.tangent.xyz, o.tangent.w);
+
+
+	o.worldNormal = normalize(
+		tangentSpaceNormal.x * o.tangent +
+		tangentSpaceNormal.y * o.binormal +
+		tangentSpaceNormal.z * o.worldNormal
+	);
+	return o;
+}
+
+float3 BoxProjection (
+	float3 direction, float3 position,
+	float4 cubemapPosition, float3 boxMin, float3 boxMax
+) {
+
+	if (cubemapPosition.w > 0) {
+		float3 factors =
+			((direction > 0 ? boxMax : boxMin) - position) / direction;
+		float scalar = min(min(factors.x, factors.y), factors.z);
+		direction = direction * scalar + (position - cubemapPosition);
+	}
+
+	return direction;
+}
+
+//a simple reflection Probe Sampler, original provided by d4rkpl4y3r
+float3 cubemapReflection( v2f o )
+{
+	float3 reflectDir = reflect(o.viewDirection, o.normal );
+    Unity_GlossyEnvironmentData envData;
+    envData.roughness = 1 - _Smoothness1;
+    envData.reflUVW = normalize(reflectDir);
+
+	float3 result = Unity_GlossyEnvironment(UNITY_PASS_TEXCUBE(unity_SpecCube0), unity_SpecCube0_HDR, envData);
+	if (!_DisableReflectionProbeBlending){
+		float spec0interpolationStrength = unity_SpecCube0_BoxMin.w;
+		UNITY_BRANCH
+		if(spec0interpolationStrength < 0.999)
+		{
+			envData.reflUVW = BoxProjection(reflectDir, o.worldPosition,
+				unity_SpecCube1_ProbePosition,
+				unity_SpecCube1_BoxMin, unity_SpecCube1_BoxMax);
+			result = lerp(Unity_GlossyEnvironment(
+					UNITY_PASS_TEXCUBE_SAMPLER(unity_SpecCube1, unity_SpecCube0),
+					unity_SpecCube1_HDR, envData
+				),result, spec0interpolationStrength);
+		}
+	}
+	return result;
+}
+/*
+Begin vert, frag
+*/
 v2f vert (appdata v)
 {
 	v2f o;
@@ -53,6 +129,8 @@ v2f vert (appdata v)
 	UNITY_TRANSFER_FOG(o,o.position);
 	o.worldPosition = mul( unity_ObjectToWorld, v.position);
 	o.worldNormal = normalize( UnityObjectToWorldNormal( v.normal ));
+	o.tangent = float4(UnityObjectToWorldDir(v.tangent.xyz), v.tangent.w);
+	o.viewDirection = normalize( _WorldSpaceCameraPos.xyz - o.worldPosition );
 	return o;
 }
 			
@@ -60,6 +138,9 @@ fixed4 frag (v2f i, uint isFrontFace : SV_IsFrontFace ) : SV_Target
 {
 	//base Color:
 	float4 tex1Col = tex2D(_Tex1, i.uv);// sample the texture first, to determine cut, to save effort.
+	if ( !_DisableReflectionProbe){
+		tex1Col.rgb += cubemapReflection(i);
+	}
 	float4 tex2Col = tex2D(_Tex2, i.uv);// sample the texture first, to determine cut, to save effort.
 	
 	float a = ( tex1Col.a + tex2Col.a ) / 2;
@@ -73,7 +154,10 @@ fixed4 frag (v2f i, uint isFrontFace : SV_IsFrontFace ) : SV_Target
 		i.normal = -i.normal;
 		i.worldNormal = -i.worldNormal;
 	}
-
+	if (!_DisableNormalmap){
+		i = applyNormalMap(i);
+	}
+	
 	//lights:
 	float4 lightCol;
 #if defined(POINT) || defined(POINT_COOKIE) || defined(SPOT)
