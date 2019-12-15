@@ -85,6 +85,7 @@ float applyToonEdge( PIO process, float brightness){
 	//the attenuation should be the max amount of color value. 
 	//To determine the end color value, All we need to do is determine the brightness.
 	UNITY_LIGHT_ATTENUATION(attenuation,process,process.worldPosition);
+	
 	//apply faux ramp:
 	if ( _ShadeSoftness > 0 ){
 		brightness -= _ShadePivot;
