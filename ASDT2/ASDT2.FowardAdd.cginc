@@ -12,9 +12,9 @@ fixed4 frag( PIO process, uint isFrontFace : SV_IsFrontFace ) : SV_Target
 	process = adjustProcess(process, 0);
 	//float3 lightDirection = normalize(process.worldPosition - _WorldSpaceLightPos0.xyz);
 	float3 lightDirection = -UnityWorldSpaceLightDir(process.worldPosition);
-	float brightness = saturate(dot(lightDirection,process.normal));// * unity_4LightAtten0;
+	float brightness = dot(lightDirection,process.normal);// * unity_4LightAtten0;
 	brightness = applyToonEdge(process, brightness);
-	color.rgb = saturate( color.rgb * _LightColor0.rgb * brightness );
+	color.rgb =  max(color.rgb * _LightColor0.rgb * brightness,0);
 
 	#ifdef MODE_TCUT
 		color.a = 1;

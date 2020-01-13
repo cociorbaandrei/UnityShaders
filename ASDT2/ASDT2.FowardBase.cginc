@@ -20,9 +20,9 @@ fixed4 applyLight(PIO process, fixed4 color){
 	//get directional color:
 	half3 directionalColor = _LightColor0.rgb;
 	//apply to final color:
-	color.rgb *= saturate(directionalColor + ambientColor);
+	color.rgb *= max(directionalColor + ambientColor,0);
 	//apply the brightness:
-	color.rgb = saturate(color.rgb * brightness);
+	color.rgb = max(color.rgb * brightness,0);
 	return color;
 }
 
