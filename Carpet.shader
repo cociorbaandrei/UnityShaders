@@ -5,17 +5,18 @@
 		_CarpetColor ("Color",Color) = (1,0,0,1)
 		_MainTex ("Texture", 2D) = "white" {}
 		_Height ("Height",float) = 1
-		[KeywordEnum(XAxis, YAxis, ZAxis)] _Direction ("Direction",int) = 0
+		[KeywordEnum(XAxis, YAxis, ZAxis, Normal)] _Direction ("Direction",int) = 0
 		_Size( "Fuzzy Square Size", float ) = 0
 		_XRand ("X Randomness", float) = 1
 		_YRand ("Y Randomness", float) = 1
 		_Radius ("Radius",range(0,.5)) = .5
 		_CMin ("Minimum Brightness",range(0,1)) = 0
+		_LBright ("Lightmap Increase",range(0,1)) = 0
 		_MaxInstances ("Number of Layers",range(1,32)) = 0
 	}
 	SubShader
 	{
-		Tags { "RenderType"="TransparentCutout" "Queue"="Geometry"}
+		Tags { "RenderType"="TransparentCutout" "Queue"="AlphaTest"}
 		LOD 100
 		Cull Off
 		AlphaTest Greater .1
@@ -28,7 +29,7 @@
 			#pragma fragment frag
 			#pragma geometry geom
 			// make fog work
-			#pragma multi_compile_fwdbase
+			#pragma multi_compile_instancing
 
 			#include "UnityPBSLighting.cginc"
 			#include "UnityCG.cginc"
@@ -38,6 +39,7 @@
 				float4 vertex : POSITION;
 				float2 uv : TEXCOORD0;
 				float2 lmuv : TEXCOORD1;
+				float4 normal : NORMAL;
 			};
 
 			struct v2f
@@ -46,7 +48,9 @@
 				float2 lmuv : TEXCOORD1;
 				float3 pixelPos : TEXCOORD2;
 				float4 vertex : SV_POSITION;
+				float3 normal: NORMAL;
 				float4 extras : TEXCOORD8;
+				float3 worldNormal : TEXCOORD7;
 			};
 
 			sampler2D _MainTex;
@@ -62,6 +66,7 @@
 			float _CMin;
 			int _Direction;
 			int _MaxInstances;
+			float _LBright;
 			
 			v2f vert (appdata v)
 			{
@@ -69,6 +74,8 @@
 				o.vertex = v.vertex;
 				o.pixelPos = mul(unity_ObjectToWorld, v.vertex);
 				o.uv = TRANSFORM_TEX(v.uv, _MainTex);
+				o.normal = normalize( v.normal );
+				o.worldNormal = normalize( UnityObjectToWorldNormal( o.normal ));
 				//o.lmuv = v.lmuv;
 				o.lmuv = v.lmuv.xy * unity_LightmapST.xy + unity_LightmapST.zw;
 				return o;
@@ -93,6 +100,9 @@
 							case 2:
 								vert.vertex.z += instanceID * _Height/10000;
 								break;
+							case 3: 
+								vert.vertex.xyz += instanceID * ( vert.normal * _Height/32 );
+								break;
 						}
 						vert.extras[0] = instanceID;
 						vert.vertex = UnityObjectToClipPos(vert.vertex);
@@ -107,6 +117,8 @@
 				fixed4 col = tex2D(_MainTex, i.uv);
 				col *= _CarpetColor;
 				fixed3 lmcol = DecodeLightmap(UNITY_SAMPLE_TEX2D(unity_Lightmap,i.lmuv));
+				lmcol *= 1 - _LBright;
+				lmcol += _LBright;
 				col.rgb *= lmcol;
 
 				

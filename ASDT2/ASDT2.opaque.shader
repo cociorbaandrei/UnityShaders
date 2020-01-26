@@ -72,7 +72,6 @@
 
 			#define MODE_OPAQUE
 
-
 			#include "ASDT2.Globals.cginc"
 			#include "ASDT2.FowardAdd.cginc"
 
