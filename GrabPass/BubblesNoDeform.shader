@@ -3,6 +3,7 @@
 	Properties{
 		_Depth("Depth", Range(-10,10)) = 1
 		_Focal("Focal",Range(-10,10)) = 0
+		_RimColor("Rim Color",color) = (1,1,1,1)
 		_RimValue("Rim Value",Range(0,10)) = 1
 		_RimMax("Rim Max",Range(0,1)) = 1
 		_Sheen("Sheen",Range(0,1)) = 1
@@ -46,6 +47,7 @@
             sampler2D _Background;
 			float _Depth;
 			float _Focal;
+			float4 _RimColor;
 			float _RimValue;
 			float _RimMax;
 			float _Sheen;
@@ -110,8 +112,9 @@
 				//apply bubble edge:
 				float value = saturate(_RimMax+dot(viewDirection, vertex.worldNormal)*_RimValue); 
 				//bubbleColor *= value;
+				value *= _RimColor.a;
 				baseColor.rgb=(baseColor.rgb * (1-_Sheen)) + (bubbleColor.rgb * _Sheen);
-				baseColor.rgb+=value;
+				baseColor.rgb = (_RimColor.rgb * value) + (baseColor.rgb * (1-value));
 				return baseColor;
             }
             ENDCG
