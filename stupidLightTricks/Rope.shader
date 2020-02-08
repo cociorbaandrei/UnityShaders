@@ -74,28 +74,33 @@
 			{
 				v2f o;
 				float4 lightPos = GetLightPosition();
-				float4 lightDir;
-				float len;
+				
 				if ( lightPos.w == 0 ){
 					v.vertex = 0;
+					o.vertex = UnityObjectToClipPos(v.vertex);
 				} else {
-					//z-index: 0-20 is what the pipe was made to be. If it's bigger than this, it will fail.
+					//z-values: 0-20 is what the pipe was made to be. If it's bigger than this, it will fail.
 					//unity converts this to 0-.2 locally
+					float s = v.vertex.z/.2f;//so this scale is 0-1, based on the object.
+
+					//first calculations in object space:
+					float4 olp= lightPos;
 					lightPos = mul(unity_WorldToObject, lightPos);
-					len = sqrt( lightPos.x*lightPos.x + lightPos.z*lightPos.z );
-					//v.vertex.z = v.vertex.z / .2f * lightPos.z;
-					v.vertex.y -= sin( v.vertex.z/.2f * 3.141592653589793238462)*_Droop;
-					v.vertex.y += v.vertex.z / .2f * lightPos.y;
-
-					v.vertex.z = v.vertex.z / .2f * len;
-
+					float len = sqrt( lightPos.x*lightPos.x + lightPos.z*lightPos.z );
+					v.vertex.y += s * lightPos.y;
+					v.vertex.z = s * len;
+					
+					//this is easier to do in object space.
 					float angle = angleBetween(float2(0,1),lightPos.xz);
-
 					v.vertex.xz = rotate2( v.vertex.xz, angle);
+					
+					//then calculations in world space:
+					v.vertex = mul(unity_ObjectToWorld,v.vertex);
+					v.vertex.y -= sin( s * 3.141592653589793238462)*_Droop;
+
+					o.vertex = UnityWorldToClipPos(v.vertex);
 				}
-
-				o.vertex = UnityObjectToClipPos(v.vertex);
-
+				
 				UNITY_TRANSFER_FOG(o,o.vertex);
 				return o;
 			}
