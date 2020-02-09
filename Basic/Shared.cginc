@@ -35,6 +35,7 @@ bool _DisableNormalmap;
 bool _DisableFog;
 bool _DisableReflectionProbe;
 bool _DisableReflectionProbeBlending;
+bool _DisableLightProbes;
 float _Brightness;
 float _LMBrightness;
 float _TCut;
@@ -80,7 +81,7 @@ float3 BoxProjection (
 }
 
 //a simple reflection Probe Sampler, original provided by d4rkpl4y3r
-float3 cubemapReflection( v2f o )
+float3 cubemapReflection( float3 color, v2f o )
 {
 	float3 reflectDir = reflect(o.viewDirection, o.normal );
     Unity_GlossyEnvironmentData envData;
@@ -103,6 +104,7 @@ float3 cubemapReflection( v2f o )
 				),result, spec0interpolationStrength);
 		}
 	}
+	result = lerp(color,result,_Smoothness);
 	return result;
 }
 
@@ -130,7 +132,7 @@ fixed4 frag (v2f i, uint isFrontFace : SV_IsFrontFace ) : SV_Target
 	//base Color:
 	float4 textureCol = tex2D(_MainTex, i.uv);// sample the texture first, to determine cut, to save effort.
 	if ( !_DisableReflectionProbe){
-		textureCol.rgb += cubemapReflection(i);
+		textureCol.rgb = cubemapReflection(textureCol.rgb, i);
 	}
 	float a = textureCol.a;
 #ifdef MODE_TCUT
@@ -173,10 +175,17 @@ fixed4 frag (v2f i, uint isFrontFace : SV_IsFrontFace ) : SV_Target
 	if (!_DisableLightmap){
 		lightmapCol = lightmapCol + _LMBrightness;
 	} else {
-		lightmapCol = _LMBrightness;
+		lightmapCol = 1+_LMBrightness;
 	}
+	lightCol.rgb += lightmapCol.rgb;
+
+	//if using lightprobes, apply lightprobes:
+	if (!_DisableLightProbes){
+		lightCol.rgb += ShadeSH9(float4(i.worldNormal,1)).rgb;
+	}
+
 	//combine lightmap and texture with the light, then blend.
-	col.rgb = saturate(col.rgb + lightCol.rgb ) * saturate( lightmapCol.rgb + lightCol.rgb);
+	col.rgb = col.rgb * lightCol.rgb;
 
 	//adjust over all brightness and clamp for our base color:
 	col.rgb *=_Brightness;

@@ -41,6 +41,7 @@ float _ShadePivot;
 sampler2D _MainTex;
 sampler2D _MainTex_ST;
 float4 _FresnelColor;
+float4 _Color;
 float _FresnelRetract;
 float _TCut;
 

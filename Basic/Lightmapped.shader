@@ -10,7 +10,6 @@
 		_NormalScale("Normal Amount", Range(0,1)) = 1.0
 		_Smoothness("Smoothness", Range(0,1)) = 0
 
-
 		[space]
 		[Enum(UnityEngine.Rendering.CullMode)] _CullMode("Cull Mode", Float) = 2                     // "Back"
 		[Toggle] _ZWrite("Z-Write",Float) = 1
@@ -18,6 +17,7 @@
 		[Toggle] _DisableNormalmap("Disable Normalmap",Float) = 0
 		[Toggle] _DisableReflectionProbe("Disable Reflection Probe",Float) = 0
 		[Toggle] _DisableReflectionProbeBlending("Disable Reflection Probe Blending",Float) = 0
+		[Toggle] _DisableLightProbes("Disable Lightprobe Sampling",Float) = 1
 		[Toggle] _DisableFog("Disable Fog",Float) = 0
 	}
 	SubShader

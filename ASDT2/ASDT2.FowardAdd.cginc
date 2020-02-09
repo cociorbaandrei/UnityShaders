@@ -1,7 +1,7 @@
 
 fixed4 frag( PIO process, uint isFrontFace : SV_IsFrontFace ) : SV_Target
 {
-	fixed4 color = tex2D( _MainTex, process.uv );
+	fixed4 color = tex2D( _MainTex, process.uv ) * _Color;
 	#ifdef MODE_TCUT
 		clip(color.a - _TCut);
 	#endif
