@@ -15,7 +15,7 @@ fixed4 applyLight(PIO process, fixed4 color){
 	/************************
 	* Color:
 	************************/
-	//get ambient color:
+	//get ambient color (lightprobes):
 	half3 ambientColor = ShadeSH9(float4(0,0,0,1));
 	//get directional color:
 	half3 directionalColor = _LightColor0.rgb;

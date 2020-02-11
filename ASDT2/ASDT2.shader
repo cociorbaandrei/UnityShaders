@@ -17,6 +17,7 @@
 
 		[space]
 		_MainTex("Base Layer", 2D) = "black" {}
+		_Color("Base Color",Color) = (1,1,1,1)
 		_TCut("Transparent Cutout",Range(0,1)) = 1
 		_FresnelColor("Fresnel Color", Color)=(1, 1, 1, 1)
 		_FresnelRetract("Fresnel Retract", Range(0,10)) = 0.5

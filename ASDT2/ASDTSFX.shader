@@ -12,10 +12,12 @@
 		[Enum(UnityEngine.Rendering.BlendMode)] _SrcBlend("Source Blend", Float) = 1                 // "One"
 		[Enum(UnityEngine.Rendering.BlendMode)] _DstBlend("Destination Blend", Float) = 0            // "Zero"
 		[Enum(UnityEngine.Rendering.BlendOp)] _BlendOp("Blend Operation", Float) = 0                 // "Add"
+		[Enum(UnityEngine.Rendering.CullMode)] _CullMode("Cull Mode", Float) = 2                     // "Back"
 		_TCut("Transparent Cut",Range(0,1)) = .1
 
 		[space]
 		_MainTex("Base Layer", 2D) = "black" {}
+		_Color("Base Color",Color) = (1,1,1,1)
 		_FresnelColor("Fresnel Color", Color)=(1, 1, 1, 1)
 		_FresnelRetract("Fresnel Retract", Range(0,10)) = 0.5
 		[space]
@@ -37,6 +39,7 @@
 
         Blend[_SrcBlend][_DstBlend]
         BlendOp[_BlendOp]
+		Cull[_CullMode]
 		AlphaTest Greater[_TCut] //cut amount
 		Lighting Off
 		SeparateSpecular Off

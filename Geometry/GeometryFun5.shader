@@ -37,7 +37,7 @@ Shader "Skuld/Geometry Fun 5"
 			#pragma geometry geom
 			#pragma fragment frag
 
-			#pragma multi_compile
+			#pragma multi_compile_instancing
 
 			#include "UnityCG.cginc"
 

@@ -189,10 +189,12 @@ fixed4 frag (v2f i, uint isFrontFace : SV_IsFrontFace ) : SV_Target
 	col = saturate(col);
 #endif
 
+#ifndef BASIC_FWD_ADD
 	//Reflects 2nd to last
 	if ( !_DisableReflectionProbe){
 		col.rgb = cubemapReflection(col.rgb, i);
 	}
+#endif
 	
 	//always last, apply fog:
 	if (!_DisableFog){

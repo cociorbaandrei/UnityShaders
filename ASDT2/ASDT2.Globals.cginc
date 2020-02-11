@@ -85,7 +85,12 @@ PIO adjustProcess(PIO process, uint isFrontFace)
 float applyToonEdge( PIO process, float brightness){
 	//the attenuation should be the max amount of color value. 
 	//To determine the end color value, All we need to do is determine the brightness.
+	//attenuation is only meaningful for pixel lights.
+#ifndef FOWARDBASE
 	UNITY_LIGHT_ATTENUATION(attenuation,process,process.worldPosition);
+#else
+	attenuation = 1
+#endif
 	
 	//apply faux ramp:
 	if ( _ShadeSoftness > 0 ){
