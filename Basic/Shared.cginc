@@ -83,7 +83,7 @@ float3 BoxProjection (
 //a simple reflection Probe Sampler, original provided by d4rkpl4y3r
 float3 cubemapReflection( float3 color, v2f o )
 {
-	float3 reflectDir = reflect(o.viewDirection, o.normal );
+	float3 reflectDir = reflect(-o.viewDirection, o.worldNormal );
     Unity_GlossyEnvironmentData envData;
     envData.roughness = 1 - _Smoothness;
     envData.reflUVW = normalize(reflectDir);
@@ -123,12 +123,12 @@ v2f vert (appdata v)
 	o.worldPosition = mul( unity_ObjectToWorld, v.position);
 	o.worldNormal = normalize( UnityObjectToWorldNormal( v.normal ));
 	o.tangent = float4(UnityObjectToWorldDir(v.tangent.xyz), v.tangent.w);
-	o.viewDirection = normalize( _WorldSpaceCameraPos.xyz - o.worldPosition );
 	return o;
 }
 			
 fixed4 frag (v2f i, uint isFrontFace : SV_IsFrontFace ) : SV_Target
 {
+	i.viewDirection = normalize( _WorldSpaceCameraPos.xyz - i.worldPosition );
 	//base Color:
 	float4 textureCol = tex2D(_MainTex, i.uv);// sample the texture first, to determine cut, to save effort.
 	float a = textureCol.a;
