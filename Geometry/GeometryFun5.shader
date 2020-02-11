@@ -9,6 +9,8 @@ Shader "Skuld/Geometry Fun 5"
 		_LightCode("Light Code",float) = 0
 
 		[space]
+		_MainTex("texture", 2D) = "white" {}
+		_TCut("Transparent Cutout",Range(0,1)) = 1
 		_ShadeRange("Shade Range",Range(0,1)) = 1.0
 		_ShadeSoftness("Edge Softness", Range(0,1)) = 0
 		_ShadePivot("Center",Range(0,1)) = .5
@@ -21,27 +23,34 @@ Shader "Skuld/Geometry Fun 5"
 	}
 
 	SubShader {
-		Tags { "RenderType"="Opaque" "Queue"="Geometry"}
+		Tags { "RenderType"="TransparentCutout" "Queue"="Geometry+1"}
 
+		Blend SrcAlpha OneMinusSrcAlpha
         Cull[_CullMode]
 		Lighting Off
 		SeparateSpecular Off
 		ZWrite [_ZWrite]
+		AlphaTest Greater[_TCut] //cut amount
 
 		Pass {
 			Tags { "LightMode" = "ForwardBase"}
 			CGPROGRAM
-			
 			#pragma target 5.0
 			#pragma vertex vert
 			#pragma geometry geom
 			#pragma fragment frag
 
 			#pragma multi_compile_instancing
+			#pragma multi_compile_fullshadows
+
 
 			#include "UnityCG.cginc"
+			#include "UnityLightingCommon.cginc"
+			#include "AutoLight.cginc"
+			#include "UnityPBSLighting.cginc"
 
 
+			float _TCut;
 			float _Step;
 			float _Spread;
 			float _Verticies;
@@ -51,6 +60,7 @@ Shader "Skuld/Geometry Fun 5"
 			float _NoiseSpeed;
 			float _Height;
 			float _LightCode;
+			sampler2D _MainTex;
 
 			//general IO with Semantics
 			struct IO
@@ -142,23 +152,31 @@ Shader "Skuld/Geometry Fun 5"
 				finalPos -= cameraMatrix._11_21_31*_PixelSize;
 				finalPos -= cameraMatrix._12_22_32*_PixelSize;
 				vert.position = UnityWorldToClipPos(finalPos);
+				vert.uv[0] = 0;
+				vert.uv[1] = 0;
 				tristream.Append(vert);
 
 				finalPos = position;
 				finalPos += cameraMatrix._11_21_31*_PixelSize;
 				finalPos -= cameraMatrix._12_22_32*_PixelSize;
 				vert.position = UnityWorldToClipPos(finalPos);
+				vert.uv[0] = 1;
+				vert.uv[1] = 0;
 				tristream.Append(vert);
 
 				finalPos = position;
 				finalPos -= cameraMatrix._11_21_31*_PixelSize;
 				finalPos += cameraMatrix._12_22_32*_PixelSize;
+				vert.uv[0] = 0;
+				vert.uv[1] = 1;
 				vert.position = UnityWorldToClipPos(finalPos);
 				tristream.Append(vert);
 
 				finalPos = position;
 				finalPos += cameraMatrix._11_21_31*_PixelSize;
 				finalPos += cameraMatrix._12_22_32*_PixelSize;
+				vert.uv[0] = 1;
+				vert.uv[1] = 1;
 				vert.position = UnityWorldToClipPos(finalPos);
 				tristream.Append(vert);
 
@@ -256,7 +274,7 @@ Shader "Skuld/Geometry Fun 5"
 					process.worldNormal = -process.worldNormal;
 				}
 				//get the camera position to calculate view direction and then get the direction from the camera to the pixel.
-				process.viewDirection = normalize(process.worldPosition - _WorldSpaceCameraPos);
+				process.viewDirection = normalize(process.position - _WorldSpaceCameraPos);
 
 				return process;
 			}
@@ -266,8 +284,17 @@ Shader "Skuld/Geometry Fun 5"
 				//get the uv coordinates and set the base color.
 				fixed4 color = fixed4(1,0,0,1);
 				process = adjustProcess(process, isFrontFace);
-				color = shiftColor(color, process.extras.x * process.extras.y);
-				return color;
+				//color = shiftColor(color, process.extras.x * process.extras.y);
+				color = shiftColor(color, process.position.y);
+				fixed4 tex = tex2D(_MainTex,process.uv);
+				float4 retVal = color * tex;
+				clip(tex.a - _TCut);
+				return retVal;
+			}
+
+			fixed4 shadowFrag (PIO i, uint isFrontFace : SV_IsFrontFace ) : SV_Target
+			{
+				return 0;
 			}
 			ENDCG
 		}
