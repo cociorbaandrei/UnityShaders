@@ -13,6 +13,7 @@
 		_CMin ("Minimum Brightness",range(0,1)) = 0
 		_LBright ("Lightmap Increase",range(0,1)) = 0
 		_MaxInstances ("Number of Layers",range(1,32)) = 0
+		[Toggle(_)] _DisableLightMaps ("Disable Light Maps",float) = 0
 	}
 	SubShader
 	{
@@ -67,6 +68,7 @@
 			int _Direction;
 			int _MaxInstances;
 			float _LBright;
+			bool _DisableLightMaps;
 			
 			v2f vert (appdata v)
 			{
@@ -116,10 +118,12 @@
 				// sample the texture
 				fixed4 col = tex2D(_MainTex, i.uv);
 				col *= _CarpetColor;
-				fixed3 lmcol = DecodeLightmap(UNITY_SAMPLE_TEX2D(unity_Lightmap,i.lmuv));
-				lmcol *= 1 - _LBright;
-				lmcol += _LBright;
-				col.rgb *= lmcol;
+				if (!_DisableLightMaps){
+					fixed3 lmcol = DecodeLightmap(UNITY_SAMPLE_TEX2D(unity_Lightmap,i.lmuv));
+					lmcol *= 1 - _LBright;
+					lmcol += _LBright;
+					col.rgb *= lmcol;
+				}
 
 				
 				float2 cut;

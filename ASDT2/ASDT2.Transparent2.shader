@@ -16,6 +16,7 @@
 		[Toggle] _ZWrite("Z-Write",Float) = 1
 
 		[space]
+		_Color("Base Color",Color) = (1,1,1,1)
 		_MainTex("Base Layer", 2D) = "black" {}
 		_FresnelColor("Fresnel Color", Color)=(1, 1, 1, 1)
 		_FresnelRetract("Fresnel Retract", Range(0,10)) = 0.5

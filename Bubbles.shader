@@ -1,12 +1,7 @@
 ﻿Shader "Skuld/Bubbles"
 {
 	Properties{
-		_Depth("Depth", Range(-10,10)) = 1
-		_Focal("Focal",Range(-10,10)) = 0
-		_RimValue("Rim Value",Range(0,10)) = 1
-		_RimMax("Rim Max",Range(0,1)) = 1
-		_Sheen("Sheen",Range(0,1)) = 1
-		_WobbleAmount("Wobble Amount",float) = 30
+
 	}
 	SubShader {
         // Draw ourselves after all opaque geometry
@@ -42,13 +37,6 @@
 				float2 uv : TEXCOORD0;
 			};
 			
-			float _Depth;
-			float _Focal;
-			float _RimValue;
-			float _RimMax;
-			float _Sheen;
-			float _WobbleAmount;
-
             sampler2D _Background;
 
 			fixed4 shiftColor( fixed4 inColor, float shift )
@@ -79,46 +67,37 @@
 				output.normal = vertex.normal;
 				output.worldNormal = normalize( UnityObjectToWorldNormal( vertex.normal ));
 
-				float wobbleX = sin(_Time*26) / _WobbleAmount + 1;
-				float wobbleY = cos(_Time*42) / (_WobbleAmount+5) + 1;
-				float wobbleZ = sin(_Time*27) / (_WobbleAmount+3) + 1;
+				float wobbleX = sin(_Time*26) / 30 + 1;
+				float wobbleY = cos(_Time*42) / 35 + 1;
+				float wobbleZ = sin(_Time*27) / 33 + 1;
 				float3 position = vertex.position;
 				position.x *= wobbleX;
 				position.y *= wobbleY;
 				position.z *= wobbleZ;
 				output.position = UnityObjectToClipPos( position );
 
-				output.normal = vertex.normal;
-				output.worldPosition = mul(unity_ObjectToWorld,vertex.position);
-				output.grabPosition = ComputeGrabScreenPos(UnityObjectToClipPos(vertex.position));
-                return output;
+				float4 grabPosition = vertex.position;
+				//grabPosition /= 1.5;
+				grabPosition = UnityObjectToClipPos(grabPosition);
+				output.grabPosition = ComputeGrabScreenPos(grabPosition);
+
+				return output;
             }
 
             half4 frag(IO vertex) : SV_Target
             {
 				float3 viewDirection = normalize(vertex.worldPosition - _WorldSpaceCameraPos);
-				float scale = (_Focal-saturate(-dot(viewDirection, vertex.worldNormal))+_Focal) * _Depth;
-				float2 uv = vertex.grabPosition.xy / vertex.grabPosition.w;
-				float4 uvoffset = ComputeGrabScreenPos(UnityObjectToClipPos(float3(0,0,0)));
-				uvoffset.xy /= uvoffset.w;
-				uv.xy -= uvoffset.xy;
-				uv *= scale;
-				uv.xy += uvoffset.xy;
-				
-				half4 baseColor = tex2D(_Background, uv);
-
-				//half4 baseColor = tex2Dproj(_Background, vertex.grabPosition);
-
-				float4 bubbleColor = float4(1, 0, 0, 1);
+                half4 baseColor = tex2Dproj(_Background, vertex.grabPosition);
+				float4 bubbleColor = float4(1, .8, .8, 1);
 				float offset = sin(_Time*5)+1;
 				float shift = dot( (vertex.uv.x-offset), (vertex.uv.y-offset)) * 2880 + (_Time*1000);
 				bubbleColor = shiftColor(bubbleColor,shift);
 				
 				//apply bubble edge:
-				float value = saturate(_RimMax+dot(viewDirection, vertex.worldNormal)*_RimValue); 
-				//bubbleColor *= value;
-				baseColor.rgb=(baseColor.rgb * (1-_Sheen)) + (bubbleColor.rgb * _Sheen);
-				baseColor.rgb+=value;
+				float value = -dot(viewDirection, vertex.worldNormal)*2 + .5; 
+				bubbleColor *= value;
+
+				baseColor.rgb*=bubbleColor.rgb;
                 return baseColor;
             }
             ENDCG

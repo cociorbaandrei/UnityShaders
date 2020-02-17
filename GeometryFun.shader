@@ -48,7 +48,7 @@
 				for ( int i = 0; i < 2; i++ ) {
 					v2f vert;
 					vert.uv = input[i].uv;
-					vert.position = UnityObjectToClipPos(input[i].position);
+					vert.position = UnityObjectToClipPos(input[i].position);//local to world position.			
 					vert.normal = input[i].normal;
 					tristream.Append(vert);
 				}

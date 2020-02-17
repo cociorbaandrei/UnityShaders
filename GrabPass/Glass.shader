@@ -3,6 +3,8 @@
 	Properties{
 		_Depth("Depth", Range(-10,10)) = 1
 		_Focal("Focal",Range(-10,10)) = 0
+		_Transparency("Transparency",Range(0,1)) = 1
+		_Color("Glass Color",color) = (1,1,1,1)
 	}
 	SubShader {
         // Draw ourselves after all opaque geometry
@@ -42,29 +44,9 @@
 			
 			float _Depth;
 			float _Focal;
+			float4 _Color;
+			float _Transparency;
             sampler2D _Background;
-
-			/*
-			fixed4 shiftColor( fixed4 inColor, float shift )
-			{
-				float r = shift * 0.01745329251994329576923690768489;
-				float u = cos(r);
-				float w = sin(r);
-				fixed4 ret;
-				ret.r = (.299+.701 * u+.168 * w)*inColor.r
-					+ (.587-.587 * u+.330 * w)*inColor.g
-					+ (.114-.114 * u-.497 * w)*inColor.b;
-				ret.g = (.299-.299 * u-.328 * w)*inColor.r
-					+ (.587+.413 * u+.035 * w)*inColor.g
-					+ (.114-.114 * u+.292 * w)*inColor.b;
-				ret.b = (.299-.3 * u+1.25 * w)*inColor.r
-					+ (.587-.588 * u-1.05 * w)*inColor.g
-					+ (.114+.886 * u-.203 * w)*inColor.b;	
-				ret[3] = inColor[3];
-				ret.a = 1;
-				return ret;
-			}
-			*/
 
             IO vert(APPInput vertex) {
                 IO output;
@@ -94,7 +76,10 @@
 				uv *= scale;
 				uv.xy += offset.xy;
 				
-				half4 baseColor = tex2D(_Background, uv);
+				float4 baseColor = tex2D(_Background, uv);
+				float ndot = 1-abs(dot(viewDirection, vertex.worldNormal));
+				float4 color2 = _Color * ndot * (1-_Transparency);
+				baseColor.rgb += color2.rgb;
 				
 					
                 return baseColor;
