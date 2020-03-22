@@ -11,6 +11,9 @@
 		_NormalTex1("Layer 1 Normal Map", 2D) = "black" {}
 		_NormalScale1("Layer 1 Normal Amount", Range(0,1)) = 1.0
 		_Smoothness1("Layer 1 Smoothness", Range(0,1)) = .5
+		_Reflectiveness1("Layer 1 Reflectiveness",Range(0,1)) = 1
+		[KeywordEnum(Lerp,Multiply,Additive)] _ReflectType1("Layer 1 Reflection Type",Float) = 0
+
 
 		[space]
 		_Tex2 ("Layer 2 Texture", 2D) = "white" {}

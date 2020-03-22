@@ -9,6 +9,8 @@
 		_NormalTex("Normal Map", 2D) = "black" {}
 		_NormalScale("Normal Amount", Range(0,1)) = 1.0
 		_Smoothness("Smoothness", Range(0,1)) = 0
+		_Reflectiveness("Reflectiveness",Range(0,1)) = 1
+		[KeywordEnum(Lerp,Multiply,Additive)] _ReflectType("Reflection Type",Float) = 0
 
 		[space]
 		[Enum(UnityEngine.Rendering.CullMode)] _CullMode("Cull Mode", Float) = 2                     // "Back"

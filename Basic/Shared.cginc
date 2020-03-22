@@ -45,6 +45,8 @@ sampler2D _NormalTex;
 sampler2D _NormalTex_ST;
 float _NormalScale;
 float _Smoothness;
+float _Reflectiveness;
+int _ReflectType;
 
 float3 CreateBinormal (float3 normal, float3 tangent, float binormalSign) {
 	return cross(normal, tangent.xyz) *
@@ -104,7 +106,22 @@ float3 cubemapReflection( float3 color, v2f o )
 				),result, spec0interpolationStrength);
 		}
 	}
-	result = lerp(color,result,_Smoothness);
+
+	//apply the amount the reflective surface is allowed to affect:
+	result *= _Reflectiveness;
+
+	switch (_ReflectType) {
+		default:
+		case 0:
+			result = lerp(color, result, _Smoothness);
+			break;
+		case 1:
+			result = result * color;
+			break;
+		case 2:
+			result = result + color;
+			break;
+	}
 	return result;
 }
 

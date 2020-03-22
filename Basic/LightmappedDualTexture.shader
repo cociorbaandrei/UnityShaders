@@ -12,6 +12,7 @@
 		_NormalScale1("Layer 1 Normal Amount", Range(0,1)) = 1.0
 		_Smoothness1("Layer 1 Smoothness", Range(0,1)) = .5
 
+
 		[space]
 		_Tex2 ("Layer 2 Texture", 2D) = "white" {}
 		[Toggle]_Unlit2("Layer 2 Unlit",Float) = 0
