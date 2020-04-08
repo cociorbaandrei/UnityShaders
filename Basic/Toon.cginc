@@ -13,9 +13,12 @@ struct v2f
 	float4 objectPosition : POSTION0;
 	float3 worldPosition : POSTION1;
 
+	float3 viewDirection : NORMAL2;
+
 	float3 normal : NORMAL;
 	float3 worldNormal : NORMAL1;
-	float3 viewDirection : NORMAL2;
+	float3 binormal : BINORMAL0;
+	float4 tangent : TANGENT;
 
 	float2 uv : TEXCOORD0;
 };
@@ -24,6 +27,11 @@ sampler2D _MainTex;
 float4 _MainTex_ST;
 sampler2D _DetailTex;
 float4 _DetailTex_ST;
+
+sampler2D _NormalTex;
+sampler2D _NormalTex_ST;
+float _NormalScale;
+bool _DisableNormalmap;
 
 sampler2D _Ramp;
 float4 _Ramp_ST;
@@ -47,6 +55,26 @@ v2f vert (appdata v)
 	o.viewDirection = normalize( _WorldSpaceCameraPos.xyz - o.worldPosition );
 	return o;
 }
+
+
+float3 CreateBinormal(float3 normal, float3 tangent, float binormalSign) {
+	return cross(normal, tangent.xyz) *
+		(binormalSign * unity_WorldTransformParams.w);
+}
+
+v2f applyNormalMap(v2f o) {
+	float3 tangentSpaceNormal =
+		UnpackScaleNormal(tex2D(_NormalTex, o.uv), _NormalScale);
+	o.binormal = CreateBinormal(o.worldNormal, o.tangent.xyz, o.tangent.w);
+
+
+	o.worldNormal = normalize(
+		tangentSpaceNormal.x * o.tangent +
+		tangentSpaceNormal.y * o.binormal +
+		tangentSpaceNormal.z * o.worldNormal
+	);
+	return o;
+}
 			
 fixed4 frag (v2f i, uint isFrontFace : SV_IsFrontFace ) : SV_Target
 {
@@ -63,6 +91,10 @@ fixed4 frag (v2f i, uint isFrontFace : SV_IsFrontFace ) : SV_Target
 	
 	col.rgb = ( col.rgb * (1-detailCol.a) ) + (detailCol.a * detailCol.rgb);
 
+	//apply normal map to normals:
+	if (!_DisableNormalmap) {
+		i = applyNormalMap(i);
+	}
 
 	//prepare for light:
 	if ( !isFrontFace ){

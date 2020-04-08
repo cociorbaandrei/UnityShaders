@@ -2,15 +2,18 @@
 {
     Properties
     {
-        _MainTex ("Texture", 2D) = "white" {}
-        _Ramp ("Toon Ramp", 2D) = "white" {}
+		_MainTex("Texture", 2D) = "white" {}
+		_NormalTex("Texture", 2D) = "white" {}
+		_NormalScale("Normal Amount", Range(0,1)) = 1.0
+		_Ramp ("Toon Ramp", 2D) = "white" {}
         _DetailTex("Details",2D) = "black" {}
 		_Color ("Color",Color) = (1,1,1,1)
 
 		[space]
 		[Enum(UnityEngine.Rendering.CullMode)] _CullMode("Cull Mode", Float) = 2   
 		[Toggle] _ZWrite("Z-Write",Float) = 1
-    }
+		[Toggle] _DisableNormalmap("Disable Normalmap",Float) = 0
+	}
     SubShader
     {
         Tags { "RenderType"="Opaque" }
@@ -64,6 +67,7 @@
 			#include "Lighting.cginc"
 			#include "UnityPBSLighting.cginc"
 			
+			#pragma vertex vert
 			#pragma fragment shadowFrag
 			
 			#pragma multi_compile_fwdadd_fullshadows

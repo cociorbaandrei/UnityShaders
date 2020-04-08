@@ -34,6 +34,8 @@
 
 		Pass
 		{
+			Lighting On
+
 			Tags { "LightMode" = "ForwardBase"}
 			CGPROGRAM
 			#pragma vertex vert
@@ -41,6 +43,7 @@
 			// make fog work
 			#pragma multi_compile_fog
 			#pragma multi_compile_instancing
+			#pragma multi_compile_fwdbase
 			
 			#include "UnityCG.cginc"
 			#include "AutoLight.cginc"
