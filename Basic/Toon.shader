@@ -16,7 +16,9 @@
 	}
     SubShader
     {
-        Tags { "RenderType"="Opaque" }
+		Tags { "RenderType" = "Opaque" "Queue" = "Geometry"}
+		LOD 10
+
 		Cull[_CullMode]
 		Lighting Off
 		SeparateSpecular Off
@@ -24,11 +26,12 @@
 
         Pass
         {
+			Lighting On
     		Tags { "LightMode" = "ForwardBase"}
             CGPROGRAM
             #pragma vertex vert
             #pragma fragment frag
-            #pragma multi_compile
+            #pragma multi_compile_fwdbase
 
             #include "UnityCG.cginc"
 			#include "AutoLight.cginc"
@@ -46,7 +49,7 @@
             CGPROGRAM
             #pragma vertex vert
             #pragma fragment frag
-            #pragma multi_compile
+            #pragma multi_compile_fwdadd_fullshadows
             #define BASIC_FWD_ADD
 
             #include "UnityCG.cginc"
@@ -67,7 +70,6 @@
 			#include "Lighting.cginc"
 			#include "UnityPBSLighting.cginc"
 			
-			#pragma vertex vert
 			#pragma fragment shadowFrag
 			
 			#pragma multi_compile_fwdadd_fullshadows
