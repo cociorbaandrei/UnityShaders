@@ -5,6 +5,7 @@ struct appdata
 	float4 position : POSITION;
 	float3 normal : NORMAL;
 	float2 uv : TEXCOORD0;
+	float4 tangent : TANGENT;
 };
 
 struct v2f
@@ -53,6 +54,7 @@ v2f vert (appdata v)
 	o.worldPosition = mul( unity_ObjectToWorld, v.position);
 	o.worldNormal = normalize( UnityObjectToWorldNormal( v.normal ));
 	o.viewDirection = normalize( _WorldSpaceCameraPos.xyz - o.worldPosition );
+	o.tangent = float4(UnityObjectToWorldDir(v.tangent.xyz), v.tangent.w);
 	return o;
 }
 
@@ -65,7 +67,7 @@ float3 CreateBinormal(float3 normal, float3 tangent, float binormalSign) {
 v2f applyNormalMap(v2f o) {
 	float3 tangentSpaceNormal =
 		UnpackScaleNormal(tex2D(_NormalTex, o.uv), _NormalScale);
-	o.binormal = CreateBinormal(o.worldNormal, o.tangent.xyz, o.tangent.w);
+		o.binormal = CreateBinormal(o.worldNormal, o.tangent.xyz, o.tangent.w);
 
 
 	o.worldNormal = normalize(
