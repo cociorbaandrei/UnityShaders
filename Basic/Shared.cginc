@@ -148,10 +148,17 @@ fixed4 frag (v2f i, uint isFrontFace : SV_IsFrontFace ) : SV_Target
 	i.viewDirection = normalize( _WorldSpaceCameraPos.xyz - i.worldPosition );
 	//base Color:
 	float4 textureCol = tex2D(_MainTex, i.uv);// sample the texture first, to determine cut, to save effort.
-#ifdef SHADOWS_SCREEN
+#if defined(SHADOWS_SCREEN)
 	float2 suv = i.position.xy / i.position.w;
-	float shadowCol = UNITY_SAMPLE_SHADOW(_ShadowMapTexture, i.position);
-	textureCol *= shadowCol;
+	#if defined(UNITY_NO_SCREENSPACE_SHADOWS)
+		UNITY_DECLARE_SHADOWMAP(_ShadowMapTexture);
+		#if defined(SHADOWS_NATIVE)
+			fixed4 shadowCol = UNITY_SAMPLE_SHADOW(_ShadowMapTexture, i.position);
+			textureCol *= shadowCol;
+		#else
+			float4 dist = SAMPLE_DEPTH_TEXTURE(_ShadowMapTexture, suv);
+		#endif
+	#endif
 #endif
 	float a = textureCol.a;
 #ifdef MODE_TCUT
