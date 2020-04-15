@@ -151,7 +151,6 @@ fixed4 frag (v2f i, uint isFrontFace : SV_IsFrontFace ) : SV_Target
 #if defined(SHADOWS_SCREEN)
 	float2 suv = i.position.xy / i.position.w;
 	#if defined(UNITY_NO_SCREENSPACE_SHADOWS)
-		UNITY_DECLARE_SHADOWMAP(_ShadowMapTexture);
 		#if defined(SHADOWS_NATIVE)
 			fixed4 shadowCol = UNITY_SAMPLE_SHADOW(_ShadowMapTexture, i.position);
 			textureCol *= shadowCol;
