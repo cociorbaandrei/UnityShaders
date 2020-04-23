@@ -1,4 +1,4 @@
-﻿Shader "Skuld/Basics/Toon"
+﻿Shader "Skuld/Basics2/Toon"
 {
     Properties
     {

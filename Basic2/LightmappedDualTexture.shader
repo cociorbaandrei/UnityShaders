@@ -1,7 +1,8 @@
-﻿Shader "Skuld/Basics/LightmappedDualTexture"
+﻿Shader "Skuld/Basics2/LightmappedDualTexture"
 {
 	Properties
 	{
+		[KeywordEnum(Opaque,Transparent,Cutout)] _Mode("Type",Float) = 0
 		_Color ("Base Color",Color) = (1,1,1,1)
 		_Brightness ("Layer Brightness", Range(0,10) ) = 1.0
 		_LMBrightness ("Layer Added Lightmap Brightness", Range(-1,1) ) = 0
@@ -27,6 +28,8 @@
 		
 
 		[space]
+		[Enum(UnityEngine.Rendering.BlendMode)] _SrcBlend("Source Blend", Float) = 1                 // "One"
+		[Enum(UnityEngine.Rendering.BlendMode)] _DstBlend("Destination Blend", Float) = 0            // "Zero"
 		[Enum(UnityEngine.Rendering.CullMode)] _CullMode("Cull Mode", Float) = 2                     // "Back"
 		[Toggle] _ZWrite("Z-Write",Float) = 1
 		[Toggle] _DisableLightmap("Disable Lightmap",Float) = 0
@@ -41,7 +44,8 @@
 		Tags { "RenderType"="Opaque" "Queue"="Geometry"}
 		LOD 10
 
-        Cull[_CullMode]
+		Blend[_SrcBlend][_DstBlend]
+		Cull[_CullMode]
 		Lighting Off
 		SeparateSpecular Off
 		ZWrite [_ZWrite]

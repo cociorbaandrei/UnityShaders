@@ -1,4 +1,4 @@
-﻿Shader "Skuld/Basics/Toon Transparent"
+﻿Shader "Skuld/Basics2/Toon Transparent"
 {
     Properties
     {

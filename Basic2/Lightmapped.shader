@@ -1,4 +1,4 @@
-﻿Shader "Skuld/Basics/Lightmapped"
+﻿Shader "Skuld/Basics2/Lightmapped"
 {
 	Properties
 	{

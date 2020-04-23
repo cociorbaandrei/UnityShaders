@@ -1,4 +1,4 @@
-﻿Shader "Skuld/Basics/Lightmapped Cutout"
+﻿Shader "Skuld/Basics2/Lightmapped Cutout"
 {
 	Properties
 	{

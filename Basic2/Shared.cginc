@@ -192,8 +192,9 @@ float4 FinalizeColor(float4 col, inout v2f i)
 	if (!_DisableFog) {
 		UNITY_APPLY_FOG(i.fogCoord, col);
 	}
-#ifdef TRANSPARENT
+#ifdef  _MODE_TRANSPARENT
 	col.a = initAlpha * _Color.a;
+	col = 0;
 #else
 	col.a = 1;
 #endif
@@ -276,7 +277,7 @@ fixed4 frag (v2f i, uint isFrontFace : SV_IsFrontFace ) : SV_Target
 	col = ApplyReflectionProbe(col,i);//applies the reflection probe.
 	col = FinalizeColor(col, i);//applies fog and final alpha values.
 #ifdef DUAL_TEXTURE
-	float4 col2 = text2D(_MainTex2,)
+	
 #endif
 
 	return col;
