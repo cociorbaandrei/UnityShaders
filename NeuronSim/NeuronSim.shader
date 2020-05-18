@@ -6,7 +6,6 @@
 		_Depth("Simulation Depth",int) = 20
 		_Space("Space Between Spheres",float) = 1.0
 		_Size("Neuron Size",float) = .1
-		[Toggle] _Reset("Reset",int) = 0
 		[Enum(UnityEngine.Rendering.BlendMode)] _SrcBlend("Source Blend", Float) = 1                 // "One"
 		[Enum(UnityEngine.Rendering.BlendMode)] _DstBlend("Destination Blend", Float) = 0            // "Zero"
 		[Enum(UnityEngine.Rendering.BlendOp)] _BlendOp("Blend Operation", Float) = 0                 // "Add"
