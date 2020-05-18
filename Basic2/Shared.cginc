@@ -241,7 +241,7 @@ void CalculateLightColor(inout v2f i, bool isFrontFace) {
 
 	float finalBrightness = saturate(attenuation * lightBright) * initAlpha;
 #else
-	float3 lightDir = normalize(_WorldSpaceLightPos0 - i.worldPosition);
+	float3 lightDir = normalize(_WorldSpaceLightPos0.xyz);
 	float lightBright = dot(lightDir, i.worldNormal);
 	float finalBrightness = saturate(lightBright);
 #endif

@@ -69,14 +69,14 @@ Shader "Skuld/Ray Marching Fun"
 				return length(position - center) - _Radius;
 			}
 
-			float DE(float3 inPosition, v2f input, float i )
+			float DE(float3 inPosition, v2f input, float i)
 			{
 				float3 position = frac(inPosition / _Size) * _Size;
-				float3 center; 
-				center.z = _Size/2 + sin(_Time*20 + inPosition.x*10)/50;
-				center.x = _Size/2 + sin(_Time*20 + inPosition.z*10)/50;
-				center.y = _Size/2 + cos(_Time*20 + inPosition.y*10)/50;
-				
+				float3 center;
+				center.z = _Size / 2 + sin(_Time * 20 + inPosition.x * 10) / 50;
+				center.x = _Size / 2 + sin(_Time * 20 + inPosition.z * 10) / 50;
+				center.y = _Size / 2 + cos(_Time * 20 + inPosition.y * 10) / 50;
+
 				float distance = sphereDistance(position, center);
 				return distance;
 			}
