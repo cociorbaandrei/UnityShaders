@@ -48,6 +48,7 @@
 			float _Space;
 			float _Size;
 			int _TestIndex;
+			float speed;
 
 			v2f vert (appdata v)
 			{
@@ -71,26 +72,102 @@
 				return i;
 			}
 
-			float3 GetPosition(int index) {
+			int clampedIndex(int index) {
 				int dim = _Depth + _Depth + 1;
 				int dim3 = dim * dim * dim;
-				if (index > dim3) index -= dim3;
-				if (index < 0) index += dim3;
-				float3 pos = 0;
+				if (index >= dim3) index -= dim3;
+				if (index < 1) index += dim3;
+				return index;
+			}
+
+			float2 getUV(int index) 
+			{
+				index += 31;
+				float2 uv = 0;
+				int dim = _MainTex_TexelSize.z;
+				uv.y = floor(index / dim);
+				index -= uv.y * dim;
+				uv.x = floor(index);
+				uv /= _MainTex_TexelSize.z;
+				return uv;
+			}
+
+			float3 getPosition(int index) {
 				index -= 1;
+
+				float3 pos = 0;
+				int dim = _Depth + _Depth + 1;
 				pos.y = floor(index / dim / dim);
 				index -= pos.y * dim * dim;
 				pos.z = floor(index / dim);
 				index -= pos.z * dim;
 				pos.x = floor(index);
 				pos *= _Space;
-				pos -= ( _Space * _Depth );
+				pos -= (_Space * _Depth);
 				return pos;
+			}
+
+			bool isExcited(float3 pos) {
+				bool excited = false;
+				for (int i = 0; i < 4; i++)
+				{
+					if (unity_LightColor[i].w > 1) {
+						float4 lightPos = float4(unity_4LightPosX0[i], unity_4LightPosY0[i], unity_4LightPosZ0[i], 1);
+						float3 objectLightPos = mul(unity_WorldToObject, lightPos).xyz / 10.0f;
+						if (length(pos - objectLightPos) < _Size) {
+							excited = true;
+						}
+					}
+				}
+				return excited;
+			}
+
+
+			fixed4 CheckNeighbor(int index, bool excited, fixed4 col) {
+				index = clampedIndex(index);
+
+				float3 pos = getPosition(index);
+				float2 uv = getUV(index);
+				fixed4 nCol = tex2D(_MainTex, uv);
+				bool nExcited = isExcited(pos);
+
+				if (excited) {
+					if (nExcited) {
+						return col;
+					} else {
+						if (nCol.b > speed) {
+							if (col.b < 1.0f) {
+								col.b += speed;
+								col.r += speed;
+								col.g += speed;
+							}
+						}
+					}
+				}
+				else {
+					if (col.b > nCol.b ) {
+						if (nCol.b < 1.0f) {
+							if (col.b > speed ) {
+								col.b -= speed;
+								col.r -= speed;
+								col.g -= speed;
+							}
+						}
+					}
+					else {
+						if (nCol.b > speed) {
+							if (col.b < 1.0f) {
+								col.b += speed;
+							}
+						}
+					}
+				}
+				return col;
 			}
 
 			fixed4 frag (v2f i) : SV_Target
 			{
-				float speed = 1.0f / 256.0f;
+				speed = 1.0f / 256.0f;
 				fixed4 col = 1;
 				int index = getIndex(i.uv);
 				float dim = _Depth + _Depth + 1;
@@ -98,7 +175,7 @@
 
 				if (_Reset) 
 				{
-					col = (float)index / dim;
+					col = (float)index / dim / 4;
 					if (index <= 1) {
 						col.rgb = float3(1,0,0);
 					}
@@ -106,28 +183,27 @@
 						col.rgb = float3(0,1,1);
 					}
 				} else {
-					col = tex2D(_MainTex, i.uv);
-					float3 objectPosition = GetPosition(index);
-					bool added = false;
+					col = saturate(tex2D(_MainTex, i.uv));
+					float3 objectPosition = getPosition(index);
+					bool excited = isExcited(objectPosition);
+					if (excited) {
+						col.g = 1;
+						col.r = 0;
+					}
+					
+					col = CheckNeighbor(index - 1, excited, col);
+					col = CheckNeighbor(index + 1, excited, col);
+					col = CheckNeighbor(index - 11, excited, col);
+					col = CheckNeighbor(index + 11, excited, col);
+					col = CheckNeighbor(index - 121, excited, col);
+					col = CheckNeighbor(index + 121, excited, col);
 
-					for (int i = 0; i < 4; i++)
-					{
-						if ( unity_LightColor[i].w > 1) {
-							float4 lightPos = float4(unity_4LightPosX0[i], unity_4LightPosY0[i], unity_4LightPosZ0[i],1);
-							float3 objectLightPos = mul(unity_WorldToObject, lightPos ).xyz / 10.0f;
-							if (length(objectPosition - objectLightPos) < _Size) {
-								col = 1;
-								added = true;
-							}
-						}
-					}
-					if (!added) {
-						//col = CheckNeighbor(index-)
-						col.b -= speed;
-						col.rg -= speed * 2;
-					}
-					//col.rg -= speed;
 					col = saturate(col);
+					if (isnan(col.b)) {
+						col.r = 1;
+						col.b = 0;
+						col.g = 0;
+					}
 				}
 
 				if (index == _TestIndex) {
