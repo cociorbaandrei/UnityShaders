@@ -107,7 +107,7 @@ fixed4 frag (v2f i, uint isFrontFace : SV_IsFrontFace ) : SV_Target
 	//lights:	
 	float4 lightCol;
 #if defined(POINT) || defined(POINT_COOKIE) || defined(SPOT)
-	float3 lightDir = normalize( _WorldSpaceLightPos0 - i.worldPosition );
+	float3 lightDir = normalize( _WorldSpaceLightPos0.xyz - i.worldPosition );
 	float lightBright = dot(lightDir, i.worldNormal);
 
 	UNITY_LIGHT_ATTENUATION(attenuation, 0, i.worldPosition);
@@ -117,7 +117,7 @@ fixed4 frag (v2f i, uint isFrontFace : SV_IsFrontFace ) : SV_Target
 
 	float finalBrightness = saturate( attenuation * lightBright ) * a;
 #else
-	float lightBright = dot(_WorldSpaceLightPos0, i.worldNormal);
+	float lightBright = dot(_WorldSpaceLightPos0.xyz, i.worldNormal);
 	float finalBrightness = saturate( lightBright );
 	finalBrightness = saturate(tex2D(_Ramp,float2(finalBrightness,0)));
 #endif
