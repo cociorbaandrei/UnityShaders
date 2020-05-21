@@ -7,7 +7,9 @@ struct appdata
 	float3 normal : NORMAL;
 	float2 uv : TEXCOORD0;
 	float2 lmuv : TEXCOORD1;
+#ifdef _NORMALMAP
 	float4 tangent : TANGENT;
+#endif
 };
 
 struct v2f
@@ -19,8 +21,10 @@ struct v2f
 	float3 normal : NORMAL;
 	float3 worldNormal : NORMAL1;
 	float3 viewDirection : NORMAL2;
+#ifdef _NORMALMAP
 	float4 tangent : TANGENT;
 	float4 worldTangent : TANGENT1;
+#endif
 
 	float2 uv : TEXCOORD0;
 #ifdef _LIGHTMAPPED
@@ -29,13 +33,11 @@ struct v2f
 #ifdef _DUALTEXTURE
 	float2 uv2 : TEXCOORD2;
 #endif
-	UNITY_FOG_COORDS(2)
 };
 
 sampler2D _MainTex;
 float4 _MainTex_ST;
 fixed4 _Color;
-bool _DisableFog;
 float _Brightness;
 float _LMBrightness;
 float _TCut;
@@ -164,12 +166,13 @@ v2f vert (appdata v)
 #ifdef _LIGHTMAPPED
 	o.lmuv = v.lmuv.xy * unity_LightmapST.xy + unity_LightmapST.zw;
 #endif
-	UNITY_TRANSFER_FOG(o,o.position);
 	o.worldPosition = mul( unity_ObjectToWorld, v.position);
 	o.worldNormal = normalize( UnityObjectToWorldNormal( v.normal ));
-	o.tangent = v.tangent;
 	o.viewDirection = normalize(_WorldSpaceCameraPos.xyz - o.worldPosition);
+#ifdef _NORMALMAP
+	o.tangent = v.tangent;
 	o.worldTangent = float4(UnityObjectToWorldDir(v.tangent.xyz), v.tangent.w);
+#endif
 	return o;
 }
 
@@ -209,10 +212,6 @@ float4 ApplyShadows(float4 col, inout  v2f i) {
 
 float4 FinalizeColor(float4 col, inout v2f i)
 {
-	//always last, apply fog:
-	if (!_DisableFog) {
-		UNITY_APPLY_FOG(i.fogCoord, col);
-	}
 #ifdef _MODE_TRANSPARENT
 	col.a = initAlpha * _Color.a;
 #else
@@ -326,7 +325,7 @@ fixed4 frag (v2f i, uint isFrontFace : SV_IsFrontFace ) : SV_Target
 #ifdef _REFLECTIONS
 	col = ApplyReflectionProbe(col, i, _Smoothness, _Reflectiveness );//applies the reflection probe.
 #endif
-	col = FinalizeColor(col, i);//applies fog and final alpha values.
+	col = FinalizeColor(col, i);//applies the final alpha values.
 
 	/****************************
 	* Dual Texture (2nd layer)
