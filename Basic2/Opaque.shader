@@ -2,7 +2,7 @@
 {
 	Properties
 	{
-		[KeywordEnum(opaque,transparent,cutout)] _Mode("Shader Type",Float ) = 0
+		[KeywordEnum(opaque)] _Mode("Shader Type",Float ) = 0
 		_Color ("Base Color",Color) = (1,1,1,1)
 
 		_MainTex("Layer 1 Texture", 2D) = "white" {}
@@ -37,22 +37,15 @@
 
 		[Toggle] _ZWrite("Z-Write",Float) = 1
 		[Toggle(_LIGHTPROBES)] _LightProbes("Lightprobe Sampling",Float) = 0
-		[Toggle] _DisableFog("Disable Fog",Float) = 0
 
-		_TCut("===== Transparent Cutout ======",Range(0,1)) = 1
-		[Enum(UnityEngine.Rendering.BlendMode)] _SrcBlend("Source Blend", Float) = 1                 // "One"
-		[Enum(UnityEngine.Rendering.BlendMode)] _DstBlend("Destination Blend", Float) = 0            // "Zero"
 		[Enum(UnityEngine.Rendering.CullMode)] _CullMode("Cull Mode", Float) = 2                     // "Back"
 	}
 	SubShader
 	{
-		Tags { "RenderType"="Transparent" "Queue"="Geometry"}
+		Tags { "RenderType"="Opaque" "Queue"="Geometry"}
 		LOD 10
 
-		Blend[_SrcBlend][_DstBlend]
 		Cull[_CullMode]
-		Lighting Off
-		SeparateSpecular Off
 		ZWrite [_ZWrite]
 
 		Pass
