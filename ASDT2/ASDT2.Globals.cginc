@@ -180,3 +180,31 @@ fixed4 applyMaskLayer( PIO process, fixed4 inColor )
 
 	return outColor;
 }
+
+//keep in mind to always add lights. But multiply the sum to the final color. 
+//This method applies ambient light from directional and lightprobes.
+fixed4 applyLight(PIO process, fixed4 color) {
+	/************************
+	* Brightness / toon edge:
+	************************/
+	//Calculate Brightness:
+	float3 ambientDirection = normalize(unity_SHAr + unity_SHAg + unity_SHAb);
+	float ambientBrightness = saturate(dot(ambientDirection, process.worldNormal));
+	float directionalBrightness = saturate(dot(_WorldSpaceLightPos0, process.worldNormal));
+	float brightness = max(ambientBrightness, directionalBrightness);
+	brightness = applyToonEdge(process, brightness);
+
+
+	/************************
+	* Color:
+	************************/
+	//get ambient color (lightprobes):
+	half3 ambientColor = ShadeSH9(float4(0, 0, 0, 1));
+	//get directional color:
+	half3 directionalColor = _LightColor0.rgb;
+	//apply to final color:
+	color.rgb *= max(directionalColor + ambientColor, 0);
+	//apply the brightness:
+	color.rgb = max(color.rgb * brightness, 0);
+	return color;
+}
