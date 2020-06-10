@@ -14,10 +14,10 @@ float2 rotate2(float2 inCoords, float rot)
 	return mul(float2x2(cosRot, -sinRot, sinRot, cosRot), inCoords);
 }
 
-fixed4 DrawHour(fixed4 col, PIO p) {
+fixed4 DrawHour(fixed4 col, PIO p, float h) {
 	float2 muv = p.uv;
 	muv -= .5f;
-	muv = rotate2(muv, (_Time.y / 720 ) * tor);
+	muv = rotate2(muv, h * 5 * tor);
 	muv *= 1 / _HourHandSize;
 	muv += _HandOffset.xy;
 	float4 col2 = tex2D(_HandTex, muv);
@@ -27,10 +27,10 @@ fixed4 DrawHour(fixed4 col, PIO p) {
 	return col;
 }
 
-fixed4 DrawMinute(fixed4 col, PIO p) {
+fixed4 DrawMinute(fixed4 col, PIO p, float m) {
 	float2 muv = p.uv;
 	muv -= .5f;
-	muv = rotate2(muv, (_Time.y / 60 ) * tor);
+	muv = rotate2(muv, m * tor);
 	muv *= 1 / _MinuteHandSize;
 	muv += _HandOffset.xy;
 	float4 col2 = tex2D(_HandTex, muv);
@@ -40,10 +40,10 @@ fixed4 DrawMinute(fixed4 col, PIO p) {
 	return col;
 }
 
-fixed4 DrawSeconds(fixed4 col, PIO p) {
+fixed4 DrawSeconds(fixed4 col, PIO p, float s) {
 	float2 suv = p.uv;
 	suv -= .5f;
-	suv = rotate2(suv, _Time.y * tor);
+	suv = rotate2(suv, s * tor);
 	suv += .5f;
 	if ( suv.x < .5f+ _HandWidth && suv.x > .5f- _HandWidth) {
 		if (suv.y > .5f && suv.y < .97f) {
@@ -61,9 +61,11 @@ fixed4 frag_clock( PIO process, uint isFrontFace : SV_IsFrontFace ) : SV_Target
 
 	process = adjustProcess(process, isFrontFace);
 
-	color = DrawSeconds(color, process);
-	color = DrawMinute(color, process);
-	color = DrawHour(color, process);
+	float3 time = GetTime();
+
+	color = DrawSeconds(color, process, time.b);
+	color = DrawMinute(color, process, time.g);
+	color = DrawHour(color, process, time.r);
 
 
 #ifndef FORWARD_ADD
@@ -75,8 +77,6 @@ fixed4 frag_clock( PIO process, uint isFrontFace : SV_IsFrontFace ) : SV_Target
 	brightness = applyToonEdge(process, brightness);
 	color.rgb = max(color.rgb * _LightColor0.rgb * brightness, 0);
 #endif
-
 	color.a = 1;
-
 	return color;
 }

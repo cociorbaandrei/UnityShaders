@@ -46,6 +46,7 @@
 			#define MODE_OPAQUE
 
 			#include "ASDT2.Globals.cginc"
+			#include "ASDT2.TimeSource.cginc"
 			#include "ASDT2.clock.cginc"
 
 			ENDCG
@@ -70,6 +71,7 @@
 			#define MODE_OPAQUE
 
 			#include "ASDT2.Globals.cginc"
+			#include "ASDT2.TimeSource.cginc"
 			#include "ASDT2.clock.cginc"
 
 			ENDCG
