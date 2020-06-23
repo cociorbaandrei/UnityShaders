@@ -217,7 +217,6 @@ float4 FinalizeColor(float4 col, inout v2f i)
 #else
 	col.a = 1;
 #endif
-
 	return col;
 }
 
