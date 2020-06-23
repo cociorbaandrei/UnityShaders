@@ -7,7 +7,7 @@ A collection of Unity Shaders I wrote and use for various things.
 
 *ASDTLight*:
 
- Probably not as light as it sounds. It uses the Unity Surface shader interface, which sets up a lot of stuff automaticly. But it does make it more widely compatable.
+ Probably not as light as it sounds. It uses the Unity Surface shader interface, which sets up a lot of stuff automaticly. But it does make it more widely compatible.
 
 *BASIC*:
 
