@@ -62,15 +62,15 @@
 			#pragma fragment frag
 			// make fog work
 			#pragma multi_compile _MODE_TRANSPARENT _MODE_CUTOUT 
-			#pragma shader_feature_local _DUALTEXTURE
-			#pragma shader_feature_local _UNLITL1 
-			#pragma shader_feature_local _UNLITL2
-			#pragma shader_feature_local _GLOW 
-			#pragma shader_feature_local _REFLECTIONS
-			#pragma shader_feature_local _REFLECTION_PROBE_BLENDING
-			#pragma shader_feature_local _LIGHTMAPPED
-			#pragma shader_feature_local _NORMALMAP
-			#pragma shader_feature_local _LIGHTPROBES
+			#pragma shader_feature _DUALTEXTURE
+			#pragma shader_feature _UNLITL1 
+			#pragma shader_feature _UNLITL2
+			#pragma shader_feature _GLOW 
+			#pragma shader_feature _REFLECTIONS
+			#pragma shader_feature _REFLECTION_PROBE_BLENDING
+			#pragma shader_feature _LIGHTMAPPED
+			#pragma shader_feature _NORMALMAP
+			#pragma shader_feature _LIGHTPROBES
 			#pragma multi_compile_instancing
 			#pragma multi_compile_fwdbase
 			
@@ -92,15 +92,15 @@
 			#pragma fragment frag
 			// make fog work
 			#pragma multi_compile _MODE_TRANSPARENT _MODE_CUTOUT 
-			#pragma shader_feature_local _DUALTEXTURE
-			#pragma shader_feature_local _UNLITL1 
-			#pragma shader_feature_local _UNLITL2 
-			#pragma shader_feature_local _GLOW 
-			#pragma shader_feature_local _REFLECTIONS
-			#pragma shader_feature_local _REFLECTION_PROBE_BLENDING
-			#pragma shader_feature_local _LIGHTMAPPED
-			#pragma shader_feature_local _NORMALMAP
-			#pragma shader_feature_local _LIGHTPROBES
+			#pragma shader_feature _DUALTEXTURE
+			#pragma shader_feature _UNLITL1 
+			#pragma shader_feature _UNLITL2 
+			#pragma shader_feature _GLOW 
+			#pragma shader_feature _REFLECTIONS
+			#pragma shader_feature _REFLECTION_PROBE_BLENDING
+			#pragma shader_feature _LIGHTMAPPED
+			#pragma shader_feature _NORMALMAP
+			#pragma shader_feature _LIGHTPROBES
 			#pragma multi_compile_fog
 			#pragma multi_compile_fwdadd_fullshadows
 			#define BASIC_FWD_ADD
