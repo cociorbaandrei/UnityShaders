@@ -45,8 +45,8 @@
 			#pragma target 3.5
 			#pragma vertex vert
 			#pragma fragment frag
-			#pragma multi_compile
 
+			#define VERTEXLIGHT_ON
 			#define MODE_OPAQUE
 
 			#include "ASDT2.Globals.cginc"

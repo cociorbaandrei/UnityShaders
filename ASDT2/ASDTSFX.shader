@@ -58,12 +58,11 @@
 			#pragma vertex vertfx
 			#pragma fragment fragsfx
 
-			#pragma multi_compile
+			#define VERTEXLIGHT_ON
 			#define FORWARDBASE
 			#define MODE_TCUT
 
 			#include "ASDT2.Globals.cginc"
-			#include "ASDT2.FowardBase.cginc"
 			#include "ASDTSFX.Bump.cginc"
 			ENDCG
 		}

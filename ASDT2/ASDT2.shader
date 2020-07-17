@@ -11,7 +11,6 @@
 		[space]
 		[Enum(UnityEngine.Rendering.BlendMode)] _SrcBlend("Source Blend", Float) = 1                 // "One"
 		[Enum(UnityEngine.Rendering.BlendMode)] _DstBlend("Destination Blend", Float) = 0            // "Zero"
-		[Enum(UnityEngine.Rendering.BlendOp)] _BlendOp("Blend Operation", Float) = 0                 // "Add"
 		[Enum(UnityEngine.Rendering.CullMode)] _CullMode("Cull Mode", Float) = 2                     // "Back"
 		[Toggle] _ZWrite("Z-Write",Float) = 1
 
@@ -37,7 +36,6 @@
 		Tags { "RenderType"="TransparentCutout" "Queue"="Geometry+1"}
 
         Blend[_SrcBlend][_DstBlend]
-        BlendOp[_BlendOp]
         Cull[_CullMode]
 		AlphaTest Greater[_TCut] //cut amount
 		Lighting Off
@@ -48,15 +46,16 @@
 			Tags { "LightMode" = "ForwardBase"}
 			CGPROGRAM
 			#include "UnityCG.cginc"
-			#include "UnityLightingCommon.cginc"
 			#include "AutoLight.cginc"
+			#include "Lighting.cginc"
 			#include "UnityPBSLighting.cginc"
 			
 			#pragma target 3.5
 			#pragma vertex vert
 			#pragma fragment frag
-			#pragma multi_compile
+			#pragma multi_compile_fwdbase_fullshadows
 
+			#define VERTEXLIGHT_ON
 			#define MODE_TCUT
 
 			#include "ASDT2.Globals.cginc"
@@ -70,7 +69,7 @@
 
 			CGPROGRAM
 			#include "UnityCG.cginc"
-			#include "UnityLightingCommon.cginc"
+			#include "Lighting.cginc"
 			#include "AutoLight.cginc"
 			#include "UnityPBSLighting.cginc"
 			
@@ -93,7 +92,7 @@
 
 			CGPROGRAM
 			#include "UnityCG.cginc"
-			#include "UnityLightingCommon.cginc"
+			#include "Lighting.cginc"
 			#include "AutoLight.cginc"
 			#include "UnityPBSLighting.cginc"
 			

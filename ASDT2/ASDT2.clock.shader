@@ -41,12 +41,11 @@
 			#pragma target 3.5
 			#pragma vertex vert
 			#pragma fragment frag_clock
-			#pragma multi_compile
-
+			#define VERTEXLIGHT_ON
 			#define MODE_OPAQUE
 
 			#include "ASDT2.Globals.cginc"
-			#include "ASDT2.TimeSource.cginc"
+			#include "../../VRChatWorldTimeSource/Shaders/VRChatTimeSource.cginc"
 			#include "ASDT2.clock.cginc"
 
 			ENDCG
@@ -71,7 +70,7 @@
 			#define MODE_OPAQUE
 
 			#include "ASDT2.Globals.cginc"
-			#include "ASDT2.TimeSource.cginc"
+			#include "../../VRChatWorldTimeSource/Shaders/VRChatTimeSource.cginc"
 			#include "ASDT2.clock.cginc"
 
 			ENDCG

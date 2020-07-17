@@ -50,8 +50,7 @@
 			#pragma target 5.0
 			#pragma vertex vert
 			#pragma fragment frag
-			#pragma multi_compile
-			
+			#define VERTEXLIGHT_ON
 			#define MODE_TRANS
 
 			#include "ASDT2.Globals.cginc"

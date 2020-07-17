@@ -22,6 +22,10 @@ struct PIO
 	float4 tangent : TEXCOORD5;//for bump mapping.
 	float3 binormal : TEXCOORD6; //also for bump mapping.
 	float4 extras : TEXCOORD8;
+	float4 _ShadowCoord : TEXCOORD7;
+#if defined(VERTEXLIGHT_ON)
+	float3 vcolor : VCOLOR;
+#endif
 };
 
 struct Light
@@ -64,6 +68,15 @@ PIO vert ( IO vertex ){
 	process.worldPosition = mul(unity_ObjectToWorld,vertex.position);
 	process.worldNormal = normalize( UnityObjectToWorldNormal( process.normal ));
 	process.extras.x = vertex.id;
+	process._ShadowCoord = mul(unity_WorldToShadow[0], mul(unity_ObjectToWorld, vertex.position));
+#ifdef VERTEXLIGHT_ON
+	process.vcolor = Shade4PointLights(
+		unity_4LightPosX0, unity_4LightPosY0, unity_4LightPosZ0,
+		unity_LightColor[0].rgb, unity_LightColor[1].rgb,
+		unity_LightColor[2].rgb, unity_LightColor[3].rgb,
+		unity_4LightAtten0, process.worldPosition, process.worldNormal
+	);
+#endif
 
 	half4 color;
 
@@ -82,16 +95,32 @@ PIO adjustProcess(PIO process, uint isFrontFace)
 	return process;
 }
 
-float applyToonEdge( PIO process, float brightness){
-	//the attenuation should be the max amount of color value. 
-	//To determine the end color value, All we need to do is determine the brightness.
-	//attenuation is only meaningful for pixel lights.
-#ifndef FOWARDBASE
-	UNITY_LIGHT_ATTENUATION(attenuation,process,process.worldPosition);
+float ToonDot(float3 direction, float3 normal) 
+{
+	float d = (	dot(normalize(direction), normalize(normal)) + 1) / 2;
+	float e = _ShadePivot-d;
+	if (_ShadeSoftness > 0) {
+		e *= 1 / _ShadeSoftness;
+		e = saturate(e);
+	}
+	else {
+		e = saturate(floor(e+1));
+	}
+#if defined(POINT) || defined(POINT_COOKIE) || defined(SPOT)
+	float brightness = 1 - (e * _ShadeRange);
 #else
-	attenuation = 1
+	float brightness = dot(direction, normalize(direction)) - (e * _ShadeRange);
 #endif
 	
+	/*
+	d = max(_ShadeMin, d);
+	d = min(_ShadeMax, d);
+	*/
+	return brightness;
+}
+
+float applyToonEdge( PIO process, float brightness)
+{
 	//apply faux ramp:
 	if ( _ShadeSoftness > 0 ){
 		brightness -= _ShadePivot;
@@ -110,7 +139,7 @@ float applyToonEdge( PIO process, float brightness){
 	brightness = brightness * _ShadeRange + (1 - _ShadeRange);
 	brightness = min(_ShadeMax,brightness);
 
-	brightness = saturate(brightness * attenuation);
+	brightness = saturate(brightness);
 	return brightness;
 }
 
@@ -187,24 +216,37 @@ fixed4 applyLight(PIO process, fixed4 color) {
 	/************************
 	* Brightness / toon edge:
 	************************/
-	//Calculate Brightness:
-	float3 ambientDirection = normalize(unity_SHAr + unity_SHAg + unity_SHAb);
-	float ambientBrightness = saturate(dot(ambientDirection, process.worldNormal));
-	float directionalBrightness = saturate(dot(_WorldSpaceLightPos0, process.worldNormal));
-	float brightness = max(ambientBrightness, directionalBrightness);
-	brightness = applyToonEdge(process, brightness);
+#if defined(POINT) || defined(POINT_COOKIE) || defined(SPOT)
+	//foward add lighting and details from pixel lights.
+	float direction = normalize(_WorldSpaceLightPos0.xyz - process.worldPosition);
+	float brightness = ToonDot(direction, process.worldNormal);
+#else
+	//Calculate light probes from foward base.
+	float3 ambientDirection = unity_SHAr.xyz + unity_SHAg.xyz + unity_SHAb.xyz;
+	float brightness = ToonDot(ambientDirection, process.worldNormal);
+	//just add the directional light.
+	float directBrightness = ToonDot(_WorldSpaceLightPos0.xyz, process.worldNormal);
+	brightness = max(brightness, directBrightness);
+#endif
 
+	UNITY_LIGHT_ATTENUATION(attenuation, process, process.worldPosition);
 
 	/************************
 	* Color:
 	************************/
-	//get ambient color (lightprobes):
-	half3 ambientColor = ShadeSH9(float4(0, 0, 0, 1));
+#if defined(POINT) || defined(POINT_COOKIE) || defined(SPOT)
 	//get directional color:
-	half3 directionalColor = _LightColor0.rgb;
-	//apply to final color:
-	color.rgb *= max(directionalColor + ambientColor, 0);
-	//apply the brightness:
-	color.rgb = max(color.rgb * brightness, 0);
+	half3 lightColor = _LightColor0.rgb * brightness * attenuation;
+	color.rgb *= lightColor;
+#else
+	//ambient color (lightprobes):
+	half3 lightColor = max(0,ShadeSH9(float4(0, 0, 0, 1)));
+	lightColor += _LightColor0.rgb * attenuation;
+#ifdef VERTEXLIGHT_ON
+	lightColor += process.vcolor;
+#endif
+	//add directional color, and apply brightness:
+	color.rgb *= lightColor * brightness;	
+#endif 
 	return color;
 }

@@ -117,6 +117,7 @@ fixed4 frag (v2f i, uint isFrontFace : SV_IsFrontFace ) : SV_Target
 
 	float finalBrightness = saturate( attenuation * lightBright ) * a;
 #else
+	//if it's not a type of pixel light, xyz will simply just be the direction.
 	float lightBright = dot(_WorldSpaceLightPos0.xyz, i.worldNormal);
 	float finalBrightness = saturate( lightBright );
 	finalBrightness = saturate(tex2D(_Ramp,float2(finalBrightness,0)));
