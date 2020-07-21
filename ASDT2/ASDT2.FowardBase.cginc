@@ -2,6 +2,7 @@ fixed4 frag(PIO process, uint isFrontFace : SV_IsFrontFace) : SV_Target
 {
 	//get the uv coordinates and set the base color.
 	fixed4 color = tex2D(_MainTex, process.uv) * _Color;
+
 	#ifdef MODE_TCUT
 		clip(color.a - _TCut);
 	#endif
@@ -14,7 +15,8 @@ fixed4 frag(PIO process, uint isFrontFace : SV_IsFrontFace) : SV_Target
 		color = applyLight(process, color);
 		color = applyMaskLayer(process, color);
 	}
-	else {
+	else 
+	{
 		color = applyMaskLayer(process, color);
 		color = applyLight(process, color);
 	}
@@ -22,5 +24,6 @@ fixed4 frag(PIO process, uint isFrontFace : SV_IsFrontFace) : SV_Target
 	#if defined(MODE_TCUT) || defined(MODE_OPAQUE)
 		color.a = 1;
 	#endif
-	return color;
+		
+	return saturate(color);
 }

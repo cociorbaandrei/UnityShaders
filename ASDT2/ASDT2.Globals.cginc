@@ -116,7 +116,7 @@ float ToonDot(float3 direction, float3 normal)
 	d = max(_ShadeMin, d);
 	d = min(_ShadeMax, d);
 	*/
-	return brightness;
+	return saturate(brightness);
 }
 
 float applyToonEdge( PIO process, float brightness)
