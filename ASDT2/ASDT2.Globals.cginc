@@ -65,7 +65,7 @@ PIO vert ( IO vertex ){
 	process.objectPosition = vertex.position;
 	process.position = UnityObjectToClipPos(vertex.position);
 	//reverse the draw position for the screen back to the world position for calculating view Direction.
-	process.worldPosition = mul(unity_ObjectToWorld,vertex.position);
+	process.worldPosition = mul(unity_ObjectToWorld,vertex.position).xyz;
 	process.worldNormal = normalize( UnityObjectToWorldNormal( process.normal ));
 	process.extras.x = vertex.id;
 	process._ShadowCoord = mul(unity_WorldToShadow[0], mul(unity_ObjectToWorld, vertex.position));
@@ -97,8 +97,13 @@ PIO adjustProcess(PIO process, uint isFrontFace)
 
 float ToonDot(float3 direction, float3 normal) 
 {
-	float d = (	dot(normalize(direction), normalize(normal)) + 1) / 2;
-	float e = _ShadePivot-d;
+	//The inputs on this should not be normalize, because for something with
+	//spherical harmonics, it will be destroyed. If need be, normalize
+	//before passing to this method.
+	//dotal can be from -1 to 1, so do this math to bring it to a range of 0 to 1
+	float d = (dot( direction, normal ) + 1) / 2;
+	float m = (dot(direction, normalize(direction)) + 1) / 2;
+	float e = _ShadePivot - d;
 	if (_ShadeSoftness > 0) {
 		e *= 1 / _ShadeSoftness;
 		e = saturate(e);
@@ -109,14 +114,12 @@ float ToonDot(float3 direction, float3 normal)
 #if defined(POINT) || defined(POINT_COOKIE) || defined(SPOT)
 	float brightness = 1 - (e * _ShadeRange);
 #else
-	float brightness = dot(direction, normalize(direction)) - (e * _ShadeRange);
+	float brightness = m - (e * _ShadeRange);
 #endif
 	
-	/*
-	d = max(_ShadeMin, d);
-	d = min(_ShadeMax, d);
-	*/
-	return saturate(brightness);
+	brightness = max(_ShadeMin, brightness);
+	//d = min(_ShadeMax, d);
+	return brightness;
 }
 
 float applyToonEdge( PIO process, float brightness)
@@ -151,10 +154,24 @@ fixed4 applyCut( fixed4 color ){
 }
 
 fixed4 applyFresnel( PIO process, fixed4 inColor ){
+#if defined(POINT) || defined(POINT_COOKIE) || defined(SPOT)
+	//foward add lighting and details from pixel lights.
+	float3 direction = normalize(_WorldSpaceLightPos0.xyz - process.worldPosition.xyz);
+	float alpha = ( dot(direction, process.worldNormal) + 1.0f ) / 2.0f;
+	alpha = max(0, alpha);
+#else
+	//Calculate light probes from foward base.
+	float3 ambientDirection = unity_SHAr.xyz + unity_SHAg.xyz + unity_SHAb.xyz; //do not normalize
+	float alpha = ( dot(ambientDirection, process.worldNormal.xyz) + 1.0f ) / 2.0f;
+
+	float directAlpha = ( dot(normalize(_WorldSpaceLightPos0.xyz), process.worldNormal.xyz) + 1.0f ) / 2.0f;
+	alpha = max(0, alpha) + max(0, directAlpha);
+#endif
+
 	float val = saturate(-dot(process.viewDirection, process.worldNormal));
 	float rim = 1 - val * _FresnelRetract;
-	rim= max(0,rim);
-	rim *= _FresnelColor.a;
+	rim = max(0,rim);
+	rim *= _FresnelColor.a * alpha;
 	float orim = 1 - rim;
 	fixed4 color;
 	inColor.rgb = (_FresnelColor * rim) + (inColor * orim);
@@ -218,15 +235,17 @@ fixed4 applyLight(PIO process, fixed4 color) {
 	************************/
 #if defined(POINT) || defined(POINT_COOKIE) || defined(SPOT)
 	//foward add lighting and details from pixel lights.
-	float direction = normalize(_WorldSpaceLightPos0.xyz - process.worldPosition);
+	float3 direction = normalize(_WorldSpaceLightPos0.xyz - process.worldPosition.xyz);
 	float brightness = ToonDot(direction, process.worldNormal);
 #else
 	//Calculate light probes from foward base.
-	float3 ambientDirection = unity_SHAr.xyz + unity_SHAg.xyz + unity_SHAb.xyz;
-	float brightness = ToonDot(ambientDirection, process.worldNormal);
+	float3 ambientDirection = unity_SHAr.xyz + unity_SHAg.xyz + unity_SHAb.xyz; //do not normalize
+	float brightness = ToonDot(ambientDirection, process.worldNormal.xyz);
+	//needs to also consider L2 harmonics
+	ambientDirection = unity_SHBr.xyz + unity_SHBg.xyz + unity_SHBb.xyz; //do not normalize
+	brightness += ToonDot(ambientDirection, process.worldNormal.xyz);
 	//just add the directional light.
-	float directBrightness = ToonDot(_WorldSpaceLightPos0.xyz, process.worldNormal);
-	brightness = max(brightness, directBrightness);
+	brightness += ToonDot(normalize(_WorldSpaceLightPos0.xyz), process.worldNormal.xyz);
 #endif
 
 	UNITY_LIGHT_ATTENUATION(attenuation, process, process.worldPosition);
@@ -240,13 +259,21 @@ fixed4 applyLight(PIO process, fixed4 color) {
 	color.rgb *= lightColor;
 #else
 	//ambient color (lightprobes):
-	half3 lightColor = max(0,ShadeSH9(float4(0, 0, 0, 1)));
-	lightColor += _LightColor0.rgb * attenuation;
+	half3 lightColor = max( 0, ShadeSH9(float4(0, 0, 0, 1) ) );
+	lightColor += max( 0, _LightColor0.rgb * attenuation);
 #ifdef VERTEXLIGHT_ON
-	lightColor += process.vcolor;
+	lightColor += max( 0, process.vcolor);
 #endif
 	//add directional color, and apply brightness:
-	color.rgb *= lightColor * brightness;	
-#endif 
+	if (brightness > 0) {
+		color.rgb *= lightColor * brightness;
+	}
+	else 
+	{ 
+		//There is no lightprobes, so just take the light color which supplies ambient brightness
+		color.rgb *= lightColor;
+	}
+#endif
+
 	return color;
 }
