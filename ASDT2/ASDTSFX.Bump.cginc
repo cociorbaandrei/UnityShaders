@@ -18,10 +18,10 @@ PIO vertfx ( IO vertex ){
 	PIO process;
 	process.uv = vertex.uv;//TRANSFORM_TEX( vertex.uv, _MainTex );
 	process.normal = normalize( vertex.normal );
-	process.objectPosition = vertex.position;
-	process.position = UnityObjectToClipPos(vertex.position);
+	process.objectPosition = vertex.vertex;
+	process.pos = UnityObjectToClipPos(vertex.vertex);
 	//reverse the draw position for the screen back to the world position for calculating view Direction.
-	process.worldPosition = mul(unity_ObjectToWorld,vertex.position);
+	process.worldPosition = mul(unity_ObjectToWorld,vertex.vertex);
 	process.worldNormal = normalize( UnityObjectToWorldNormal( process.normal ));
 	process.extras.x = vertex.id;
 

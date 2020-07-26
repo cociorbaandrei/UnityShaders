@@ -54,8 +54,8 @@
 			#pragma vertex vert
 			#pragma fragment frag
 			#pragma multi_compile_fwdbase_fullshadows
+			#pragma multi_compile _ VERTEXLIGHT_ON
 
-			#define VERTEXLIGHT_ON
 			#define MODE_TCUT
 
 			#include "ASDT2.Globals.cginc"
@@ -101,7 +101,7 @@
 			#pragma vertex vert
 			#pragma fragment frag
 			
-			#pragma multi_compile_fwdadd_fullshadows
+			#pragma multi_compile_shadowcaster_fullshadows
 
 			#define MODE_TCUT
 

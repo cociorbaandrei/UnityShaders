@@ -103,7 +103,7 @@ Shader "Skuld/Geometry Fun 3"
 				position -= ( ( position - center ) * _Step );
 				position += destination;
 				position += direction;
-				vert.position = UnityObjectToClipPos(position);
+				vert.pos = UnityObjectToClipPos(position);
 				tristream.Append(vert);
 
 				vert = input[1];
@@ -111,7 +111,7 @@ Shader "Skuld/Geometry Fun 3"
 				position -= ( ( position - center ) * _Step );
 				position += destination;
 				position += direction;
-				vert.position = UnityObjectToClipPos(position);
+				vert.pos = UnityObjectToClipPos(position);
 				tristream.Append(vert);
 
 				vert = input[2];
@@ -119,7 +119,7 @@ Shader "Skuld/Geometry Fun 3"
 				position -= ( ( position - center ) * _Step );
 				position += destination;
 				position += direction;
-				vert.position = UnityObjectToClipPos(position);
+				vert.pos = UnityObjectToClipPos(position);
 				tristream.Append(vert);
 
 				tristream.RestartStrip();

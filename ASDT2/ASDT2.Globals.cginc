@@ -2,7 +2,7 @@
 //general IO with Semantics
 struct IO
 {
-	float4 position : POSITION;
+	float4 vertex : POSITION;
 	float3 normal : NORMAL;
 	float2 uv : TEXCOORD0;
 	uint id : SV_VertexID;
@@ -12,7 +12,7 @@ struct IO
 //processed IO to be used by submethods
 struct PIO
 {
-	float4 position : SV_POSITION; //the Position relative to the screen
+	float4 pos : SV_POSITION; //the Position relative to the screen
 	float3 normal : NORMAL; //The normal in screen space.
 	float2 uv : TEXCOORD0; //uv coordinates
 	float4 objectPosition : TEXCOORD1; //The position relative to the mesh origin.
@@ -22,9 +22,11 @@ struct PIO
 	float4 tangent : TEXCOORD5;//for bump mapping.
 	float3 binormal : TEXCOORD6; //also for bump mapping.
 	float4 extras : TEXCOORD8;
-	float4 _ShadowCoord : TEXCOORD7;
 #if defined(VERTEXLIGHT_ON)
 	float3 vcolor : VCOLOR;
+#endif
+#if !defined(UNITY_PASS_SHADOWCASTER)
+	SHADOW_COORDS(7)
 #endif
 };
 
@@ -58,17 +60,21 @@ float _MaskRainbow;
 float _MaskGlowSpeed;
 float _MaskGlowSharpness;
 
-PIO vert ( IO vertex ){
+PIO vert( IO v ){
 	PIO process;
-	process.uv = vertex.uv;//TRANSFORM_TEX( vertex.uv, _MainTex );
-	process.normal = normalize( vertex.normal );
-	process.objectPosition = vertex.position;
-	process.position = UnityObjectToClipPos(vertex.position);
+	process.uv = v.uv;//TRANSFORM_TEX( v.uv, _MainTex );
+	process.normal = normalize( v.normal );
+	process.objectPosition = v.vertex;
+	process.pos = UnityObjectToClipPos( v.vertex );
+
 	//reverse the draw position for the screen back to the world position for calculating view Direction.
-	process.worldPosition = mul(unity_ObjectToWorld,vertex.position).xyz;
-	process.worldNormal = normalize( UnityObjectToWorldNormal( process.normal ));
-	process.extras.x = vertex.id;
-	process._ShadowCoord = mul(unity_WorldToShadow[0], mul(unity_ObjectToWorld, vertex.position));
+	process.worldPosition = mul( unity_ObjectToWorld, v.vertex ).xyz;
+	process.worldNormal = normalize( UnityObjectToWorldNormal( process.normal ) );
+	process.extras.x = v.id;
+#if !defined(UNITY_PASS_SHADOWCASTER)
+	TRANSFER_SHADOW(process)
+#endif
+
 #ifdef VERTEXLIGHT_ON
 	process.vcolor = Shade4PointLights(
 		unity_4LightPosX0, unity_4LightPosY0, unity_4LightPosZ0,
@@ -77,8 +83,6 @@ PIO vert ( IO vertex ){
 		unity_4LightAtten0, process.worldPosition, process.worldNormal
 	);
 #endif
-
-	half4 color;
 
 	return process;
 }
@@ -111,7 +115,7 @@ float ToonDot(float3 direction, float3 normal)
 	else {
 		e = saturate(floor(e+1));
 	}
-#if defined(POINT) || defined(POINT_COOKIE) || defined(SPOT)
+#if defined(UNITY_PASS_FORWARDADD)
 	float brightness = 1 - (e * _ShadeRange);
 #else
 	float brightness = m - (e * _ShadeRange);
@@ -154,7 +158,7 @@ fixed4 applyCut( fixed4 color ){
 }
 
 fixed4 applyFresnel( PIO process, fixed4 inColor ){
-#if defined(POINT) || defined(POINT_COOKIE) || defined(SPOT)
+#if defined(UNITY_PASS_FORWARDADD)
 	//foward add lighting and details from pixel lights.
 	float3 direction = normalize(_WorldSpaceLightPos0.xyz - process.worldPosition.xyz);
 	float alpha = ( dot(direction, process.worldNormal) + 1.0f ) / 2.0f;
@@ -233,7 +237,7 @@ fixed4 applyLight(PIO process, fixed4 color) {
 	/************************
 	* Brightness / toon edge:
 	************************/
-#if defined(POINT) || defined(POINT_COOKIE) || defined(SPOT)
+#if defined(UNITY_PASS_FORWARDADD)
 	//foward add lighting and details from pixel lights.
 	float3 direction = normalize(_WorldSpaceLightPos0.xyz - process.worldPosition.xyz);
 	float brightness = ToonDot(direction, process.worldNormal);
@@ -253,7 +257,7 @@ fixed4 applyLight(PIO process, fixed4 color) {
 	/************************
 	* Color:
 	************************/
-#if defined(POINT) || defined(POINT_COOKIE) || defined(SPOT)
+#if defined(UNITY_PASS_FORWARDADD)
 	//get directional color:
 	half3 lightColor = _LightColor0.rgb * brightness * attenuation;
 	color.rgb *= lightColor;
