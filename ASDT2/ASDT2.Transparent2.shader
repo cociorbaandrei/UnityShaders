@@ -85,7 +85,6 @@
 			ENDCG
 		}
 		Pass {
-			/*
 			Tags { "LightMode" = "ShadowCaster"}
 
 			CGPROGRAM
@@ -107,7 +106,6 @@
 			#include "ASDT2.shadows.cginc"
 
 			ENDCG
-			*/
 		}
 	} 
 	//FallBack "Diffuse"

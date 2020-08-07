@@ -82,6 +82,11 @@ PIO vert( IO v ){
 		unity_LightColor[2].rgb, unity_LightColor[3].rgb,
 		unity_4LightAtten0, process.worldPosition, process.worldNormal
 	);
+	// According to d4rk, the impementation of this by unity is wrong. 
+	//This will need a custom implementation of the line calculating atten.
+	// float4 atten = 1.0 / (1.0 + lengthSq * lightAttenSq);
+	// float4 atten2 = saturate(1 - (lengthSq * lightAttenSq / 25));
+	// atten = min(atten, atten2 * atten2);
 #endif
 
 	return process;
@@ -246,8 +251,10 @@ fixed4 applyLight(PIO process, fixed4 color) {
 	float3 ambientDirection = unity_SHAr.xyz + unity_SHAg.xyz + unity_SHAb.xyz; //do not normalize
 	float brightness = ToonDot(ambientDirection, process.worldNormal.xyz);
 	//needs to also consider L2 harmonics
+	/*
 	ambientDirection = unity_SHBr.xyz + unity_SHBg.xyz + unity_SHBb.xyz; //do not normalize
 	brightness += ToonDot(ambientDirection, process.worldNormal.xyz);
+	*/
 	//just add the directional light.
 	brightness += ToonDot(normalize(_WorldSpaceLightPos0.xyz), process.worldNormal.xyz);
 #endif
