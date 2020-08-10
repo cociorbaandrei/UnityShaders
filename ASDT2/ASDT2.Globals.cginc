@@ -127,6 +127,10 @@ float ToonDot(float3 direction, float3 normal)
 #endif
 	
 	brightness = max(_ShadeMin, brightness);
+	
+#if UNITY_COLORSPACE_LINEAR
+	brightness = GammaToLinearSpaceExact(brightness);
+#endif
 	//d = min(_ShadeMax, d);
 	return brightness;
 }
