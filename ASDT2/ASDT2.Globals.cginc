@@ -60,6 +60,52 @@ float _MaskRainbow;
 float _MaskGlowSpeed;
 float _MaskGlowSharpness;
 
+float3 Shade4PointLightsFixed(
+	float4 lightPosX, float4 lightPosY, float4 lightPosZ,
+	float3 lightColor0, float3 lightColor1, float3 lightColor2, float3 lightColor3,
+	float4 lightAttenSq,
+	float3 pos, float3 normal)
+{
+	// According to d4rk, the impementation of Shade4PointLights by unity is wrong. 
+	// This will need a custom implementation of the line calculating atten.
+
+	// to light vectors
+	float4 toLightX = lightPosX - pos.x;
+	float4 toLightY = lightPosY - pos.y;
+	float4 toLightZ = lightPosZ - pos.z;
+	// squared lengths
+	float4 lengthSq = 0;
+	lengthSq += toLightX * toLightX;
+	lengthSq += toLightY * toLightY;
+	lengthSq += toLightZ * toLightZ;
+	// don't produce NaNs if some vertex position overlaps with the light
+	lengthSq = max(lengthSq, 0.000001);
+
+	// NdotL
+	float4 ndotl = 0;
+	ndotl += toLightX * normal.x;
+	ndotl += toLightY * normal.y;
+	ndotl += toLightZ * normal.z;
+	// correct NdotL
+	float4 corr = rsqrt(lengthSq);
+	ndotl = max(float4(0, 0, 0, 0), ndotl * corr);
+
+	// attenuation
+	float4 atten = 1.0 / (1.0 + lengthSq * lightAttenSq);
+	//modified portion:
+	float4 atten2 = saturate(1 - (lengthSq * lightAttenSq / 25));
+	atten = min(atten, atten2 * atten2);
+	//unmodified
+	float4 diff = ndotl * atten;
+	// final color
+	float3 col = 0;
+	col += lightColor0 * diff.x;
+	col += lightColor1 * diff.y;
+	col += lightColor2 * diff.z;
+	col += lightColor3 * diff.w;
+	return col;
+}
+
 PIO vert( IO v ){
 	PIO process;
 	process.uv = v.uv;//TRANSFORM_TEX( v.uv, _MainTex );
@@ -76,17 +122,12 @@ PIO vert( IO v ){
 #endif
 
 #ifdef VERTEXLIGHT_ON
-	process.vcolor = Shade4PointLights(
+	process.vcolor = Shade4PointLightsFixed(
 		unity_4LightPosX0, unity_4LightPosY0, unity_4LightPosZ0,
 		unity_LightColor[0].rgb, unity_LightColor[1].rgb,
 		unity_LightColor[2].rgb, unity_LightColor[3].rgb,
 		unity_4LightAtten0, process.worldPosition, process.worldNormal
 	);
-	// According to d4rk, the impementation of this by unity is wrong. 
-	//This will need a custom implementation of the line calculating atten.
-	// float4 atten = 1.0 / (1.0 + lengthSq * lightAttenSq);
-	// float4 atten2 = saturate(1 - (lengthSq * lightAttenSq / 25));
-	// atten = min(atten, atten2 * atten2);
 #endif
 
 	return process;
@@ -260,7 +301,7 @@ fixed4 applyLight(PIO process, fixed4 color) {
 	brightness += ToonDot(ambientDirection, process.worldNormal.xyz);
 	*/
 	//just add the directional light.
-	brightness += ToonDot(normalize(_WorldSpaceLightPos0.xyz), process.worldNormal.xyz);
+	float directBrightness = ToonDot(normalize(_WorldSpaceLightPos0.xyz), process.worldNormal.xyz);
 #endif
 
 	UNITY_LIGHT_ATTENUATION(attenuation, process, process.worldPosition);
@@ -273,21 +314,25 @@ fixed4 applyLight(PIO process, fixed4 color) {
 	half3 lightColor = _LightColor0.rgb * brightness * attenuation;
 	color.rgb *= lightColor;
 #else
+	half3 lightColor;
+
 	//ambient color (lightprobes):
-	half3 lightColor = max( 0, ShadeSH9(float4(0, 0, 0, 1) ) );
-	lightColor += max( 0, _LightColor0.rgb * attenuation);
+	half3 probeColor = max( 0, ShadeSH9(float4(0, 0, 0, 1) ) );
+	probeColor *= brightness;
+	lightColor = probeColor;
+
+	//direct color
+	half3 directColor = max( 0, _LightColor0.rgb);
+	directColor *= directBrightness;
+	if (attenuation > 0) { //this is because sometimes the direct light breaks and doesn't have an attenuation of 1.0 when it should.
+		directColor *= attenuation;
+	}
+	lightColor += directColor;
+
 #ifdef VERTEXLIGHT_ON
 	lightColor += max( 0, process.vcolor);
 #endif
-	//add directional color, and apply brightness:
-	if (brightness > 0) {
-		color.rgb *= lightColor * brightness;
-	}
-	else 
-	{ 
-		//There is no lightprobes, so just take the light color which supplies ambient brightness
-		color.rgb *= lightColor;
-	}
+	color.rgb *= lightColor;
 #endif
 
 	return color;
