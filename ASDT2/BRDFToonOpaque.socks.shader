@@ -1,6 +1,10 @@
-﻿Shader "Skuld/Advance Shading + Dual Texture 2 Opaque"
+﻿Shader "Skuld/BRDF Toon Opaque (Socks)"
 {
 	Properties {
+		_Stars("Number of Stars",int) = 20
+		_XScatter("X Scatter", Range(0,1)) = 1
+		_YScatter("Y Scatter", Range(0,1)) = 1
+		_Bounding("Bounding",Vector) = (0,0,0,0)
 		[space]
 		_ShadeRange("Shade Range",Range(0,1)) = 1.0
 		_ShadeSoftness("Edge Softness", Range(0,1)) = 0
@@ -13,27 +17,30 @@
 		[Toggle] _ZWrite("Z-Write",Float) = 1
 
 		[space]
-		_MainTex("Base Layer", 2D) = "white" {}
+		_MainTex("Base Layer", 2D) = "black" {}
+		_CloudsTex("clouds", 2D) = "black" {}
+		_StarTex("Star", 2D) = "black" {}
+		_StarPos("Star Position", 2D) = "black" {} //must be 64x64
 		_Color("Base Color",Color) = (1,1,1,1)
+		[Normal] _NormalTex("Normal Map", 2D) = "(1,1,1,1)" {}
+		_NormalScale("Normal Amount", Range(0,1)) = 1.0
 		_FresnelColor("Fresnel Color", Color)=(1, 1, 1, 1)
 		_FresnelRetract("Fresnel Retract", Range(0,10)) = 0.5
-
-		[space]
-		_MaskTex("Mask Layer", 2D) = "black" {}
-		[Toggle] _MaskGlow("Mask Glow", Float) = 0
-		_MaskGlowColor("Glow Color", Color)=(1, 1, 1, 1)
-		[Toggle] _MaskRainbow("Rainbow Effect", Float) = 0
-		_MaskGlowSpeed("Glow Speed",Range(0,10)) = 1
-		_MaskGlowSharpness("Glow Sharpness",Range(1,200)) = 1.0
+		_Smoothness("Smoothness", Range(0,1)) = 0
+		_Reflectiveness("Reflectiveness",Range(0,1)) = 1
+		[KeywordEnum(Lerp,Multiply,Additive)] _ReflectType("Reflection Type",Float) = 0
+		_TCut("Transparent Cutout",Range(0,1)) = 1
+		
 	}
 
 	SubShader {
-		Tags { "RenderType"="Opaque" "Queue"="Geometry+1"}
+		Tags { "RenderType"="Opaque" "Queue"="Geometry"}
 
         Cull[_CullMode]
 		Lighting Off
 		SeparateSpecular Off
 		ZWrite [_ZWrite]
+
 		Pass {
 			Tags { "LightMode" = "ForwardBase"}
 			CGPROGRAM
@@ -44,13 +51,14 @@
 			
 			#pragma target 5.0
 			#pragma vertex vert
-			#pragma fragment frag
+			#pragma fragment socksFrag
 			#pragma multi_compile _ VERTEXLIGHT_ON
 
-			#define MODE_OPAQUE
+			#define MODE_BRDF
 
 			#include "ASDT2.Globals.cginc"
-			#include "ASDT2.FowardBase.cginc"
+			#include "BRDF.frag.cginc"
+			#include "BRDF.socks.frag.cginc"
 
 			ENDCG
 		}
@@ -60,21 +68,22 @@
 
 			CGPROGRAM
 			#include "UnityCG.cginc"
-			#include "UnityLightingCommon.cginc"
+			#include "Lighting.cginc"
 			#include "AutoLight.cginc"
 			#include "UnityPBSLighting.cginc"
 			
 			#pragma target 5.0
 			
 			#pragma vertex vert
-			#pragma fragment frag
+			#pragma fragment socksFrag
 			
 			#pragma multi_compile_fwdadd_fullshadows
 
-			#define MODE_OPAQUE
+			#define MODE_BRDF
 
 			#include "ASDT2.Globals.cginc"
-			#include "ASDT2.FowardAdd.cginc"
+			#include "BRDF.frag.cginc"
+			#include "BRDF.socks.frag.cginc"
 
 			ENDCG
 		}
@@ -92,9 +101,9 @@
 			#pragma vertex vert
 			#pragma fragment frag
 			
-			#pragma multi_compile_fwdadd_fullshadows
+			#pragma multi_compile_shadowcaster_fullshadows
 
-			#define MODE_OPAQUE
+			#define MODE_BRDF
 
 			#include "ASDT2.Globals.cginc"
 			#include "ASDT2.shadows.cginc"

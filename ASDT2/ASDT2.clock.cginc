@@ -6,13 +6,7 @@ float tor;
 float _MinuteHandSize;
 float _HourHandSize;
 
-float2 rotate2(float2 inCoords, float rot)
-{
-	float sinRot;
-	float cosRot;
-	sincos(rot, sinRot, cosRot);
-	return mul(float2x2(cosRot, -sinRot, sinRot, cosRot), inCoords);
-}
+#include "utils.rotate2.cginc"
 
 fixed4 DrawHour(fixed4 col, PIO p, float h) {
 	float2 muv = p.uv;

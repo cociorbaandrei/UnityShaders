@@ -1,4 +1,6 @@
 #pragma once
+#define BINORMAL_PER_FRAGMENT
+
 //general IO with Semantics
 struct IO
 {
@@ -20,6 +22,7 @@ struct PIO
 	float3 worldPosition : TEXCOORD3; //the position relative to world origin.
 	float3 viewDirection : TEXCOORD4; //The direction the camera is looking at the mesh.
 	float4 tangent : TEXCOORD5;//for bump mapping.
+	float4 worldTangent : TANGENT1;  //more bump mapping.
 	float3 binormal : TEXCOORD6; //also for bump mapping.
 	float4 extras : TEXCOORD8;
 #if defined(VERTEXLIGHT_ON)
@@ -117,17 +120,24 @@ PIO vert( IO v ){
 	process.worldPosition = mul( unity_ObjectToWorld, v.vertex ).xyz;
 	process.worldNormal = normalize( UnityObjectToWorldNormal( process.normal ) );
 	process.extras.x = v.id;
+	process.viewDirection = normalize(process.worldPosition - _WorldSpaceCameraPos.xyz);
 #if !defined(UNITY_PASS_SHADOWCASTER)
 	TRANSFER_SHADOW(process)
 #endif
 
 #ifdef VERTEXLIGHT_ON
-	process.vcolor = Shade4PointLightsFixed(
-		unity_4LightPosX0, unity_4LightPosY0, unity_4LightPosZ0,
-		unity_LightColor[0].rgb, unity_LightColor[1].rgb,
-		unity_LightColor[2].rgb, unity_LightColor[3].rgb,
-		unity_4LightAtten0, process.worldPosition, process.worldNormal
-	);
+		process.vcolor = Shade4PointLightsFixed(
+			unity_4LightPosX0, unity_4LightPosY0, unity_4LightPosZ0,
+			unity_LightColor[0].rgb, unity_LightColor[1].rgb,
+			unity_LightColor[2].rgb, unity_LightColor[3].rgb,
+			unity_4LightAtten0, process.worldPosition, process.worldNormal
+		);
+#endif
+	process.tangent = v.tangent;
+#ifdef MODE_BRDF
+	process.worldTangent = float4(UnityObjectToWorldDir(v.tangent.xyz), v.tangent.w);
+#else
+	process.worldTangent = float4(0, 0, 0, 0);
 #endif
 
 	return process;
@@ -140,7 +150,7 @@ PIO adjustProcess(PIO process, uint isFrontFace)
 		process.worldNormal = -process.worldNormal;
 	}
 	//get the camera position to calculate view direction and then get the direction from the camera to the pixel.
-	process.viewDirection = normalize(process.worldPosition - _WorldSpaceCameraPos);
+	//process.viewDirection = normalize(process.worldPosition - _WorldSpaceCameraPos);
 
 	return process;
 }
@@ -264,17 +274,18 @@ fixed4 applyMaskLayer( PIO process, fixed4 inColor )
 		int time = ( _Time * (_MaskGlowSpeed*1000) );
 		float gp = ( time % 120 ) / 100.0f - .1;
 
-		float igv = (gp - uv[1]);
-		if (igv < 0 ) igv = 0 - igv;
-		igv = igv * _MaskGlowSharpness;
-		if (igv > 1 ) igv = 1;
-		if (igv < 0 ) igv = 0;
-		float gv = 1-igv;
+		float gv = (gp - uv[1]);
+		gv = abs(gv);
+		//if (gv < 0 ) gv = 0 - igv;
+		gv *= _MaskGlowSharpness;
+		gv = saturate(gv);
+		gv = 1 - gv;
+		gv *= _MaskGlowColor.a;
 		if (_MaskRainbow){
 			int rt = _Time * 7000;
 			_MaskGlowColor = normalize(shiftColor(half4(1,0,0,1),rt));
 		}
-		maskColor.rgb = (maskColor.rgb * igv) + (_MaskGlowColor.rgb * gv);
+		maskColor.rgb = lerp(maskColor.rgb,_MaskGlowColor.rgb,gv);
 	}
 	outColor.rgb = ( outColor.rgb * alphaDifference ) + (maskColor.rgb * maskColor.a);
 
