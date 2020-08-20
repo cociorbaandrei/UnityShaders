@@ -9,6 +9,9 @@ int _Stars;
 float _XScatter;
 float _YScatter;
 float4 _Bounding;
+float _CloudSpeed;
+float _CloudStretch;
+float _StarSize;
 
 float4 cloudEffect(PIO process, float4 color, float a)
 {
@@ -16,16 +19,16 @@ float4 cloudEffect(PIO process, float4 color, float a)
 	float2 clouduv;
 	//layer 1
 	clouduv = process.uv;
-	clouduv.x *= 5;
-	clouduv.x += _Time.x*2;
+	clouduv.x *= _CloudStretch;
+	clouduv.x += _Time.x * _CloudSpeed;
 	clouds = tex2D(_CloudsTex, clouduv);
 	clouds.rg *= 0;
 	clouds *= a;
 	color = lerp(color, clouds, clouds.a);
 	//layer 2
 	clouduv = process.uv;
-	clouduv.x *= 5;
-	clouduv.x -= _Time.x;
+	clouduv.x *= _CloudStretch;
+	clouduv.x -= _Time.x * (_CloudSpeed/2);
 	clouds = tex2D(_CloudsTex, clouduv);
 	clouds.rb *= 2;
 	clouds *= a;
@@ -58,7 +61,7 @@ float4 starEffect(PIO process, float4 color)
 		y *= 1 - (_Bounding.y + _Bounding.w);
 		y += _Bounding.y;
 		float t = max(.1f, sin(_Time.z + i));
-		float s = ( 1 / t ) * 100;
+		float s = ( _StarSize / t );
 		
 		staruv;
 		staruv.x = (x - process.uv.x);

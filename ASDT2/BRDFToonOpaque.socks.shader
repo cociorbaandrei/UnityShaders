@@ -1,7 +1,10 @@
 ﻿Shader "Skuld/BRDF Toon Opaque (Socks)"
 {
 	Properties {
+		_CloudStretch("Cloud Width",float) = 5
+		_CloudSpeed("Cloud Speed",float) = 2
 		_Stars("Number of Stars",int) = 20
+		_StarSize("Size of Stars",float) = 100
 		_XScatter("X Scatter", Range(0,1)) = 1
 		_YScatter("Y Scatter", Range(0,1)) = 1
 		_Bounding("Bounding",Vector) = (0,0,0,0)
