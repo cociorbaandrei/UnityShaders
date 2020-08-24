@@ -348,13 +348,19 @@ fixed4 applyLight(PIO process, fixed4 color) {
 
 	//ambient color (lightprobes):
 	half3 probeColor = max( 0, ShadeSH9(float4(0, 0, 0, 1) ) );
-	probeColor *= brightness;
-	lightColor = probeColor;
+	if (brightness > 0) {
+		probeColor *= brightness;
+		lightColor = probeColor;
+	}
+	else {
+		lightColor = 1;
+	}
+	
 
 	//direct color
 	half3 directColor = max( 0, _LightColor0.rgb);
 	directColor *= directBrightness;
-	if (attenuation > 0) { //this is because sometimes the direct light breaks and doesn't have an attenuation of 1.0 when it should.
+	if (attenuation > 0 && directBrightness>0) { //this is because sometimes the direct light breaks and doesn't have an attenuation of 1.0 when it should.
 		directColor *= attenuation;
 		lightColor += directColor;
 	}

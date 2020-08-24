@@ -82,8 +82,8 @@
 				fixed4 col2 = tex2D(_SubTex, uv2);
 				col2.g *= sin(rotAmt)/2 + .5f;
 				fixed4 col;
-				col.rgb = col1.rgb * col2.rgb;
-				col.a = max(col1.a,col2.a);
+				col.rgb = col2.rgb * col2.a + col1.rgb*col1.a;
+				col.a = saturate(col1.a + col2.a);
 				col *= _Color;
                 return col;
             }
