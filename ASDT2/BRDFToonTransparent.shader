@@ -37,7 +37,6 @@
 	SubShader {
 		Tags { "RenderType" = "Transparent" "Queue" = "Transparent-501"}
 
-        Blend[_SrcBlend][_DstBlend]
         Cull[_CullMode]
 		Lighting Off
 		SeparateSpecular Off
@@ -45,6 +44,8 @@
 
 		Pass {
 			Tags { "LightMode" = "ForwardBase"}
+			Blend[_SrcBlend][_DstBlend]
+
 			CGPROGRAM
 			#include "UnityCG.cginc"
 			#include "UnityLightingCommon.cginc"
@@ -54,6 +55,7 @@
 			#pragma target 5.0
 			#pragma vertex vert
 			#pragma fragment frag
+			#pragma multi_compile _ SHADOWS_SCREEN
 			#pragma multi_compile _ VERTEXLIGHT_ON
 
 			#define MODE_BRDF

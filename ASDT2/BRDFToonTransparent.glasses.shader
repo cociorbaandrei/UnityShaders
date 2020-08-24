@@ -48,6 +48,7 @@
 			#pragma target 5.0
 			#pragma vertex vert
 			#pragma fragment glassesFrag
+			#pragma multi_compile _ SHADOWS_SCREEN
 			#pragma multi_compile _ VERTEXLIGHT_ON
 
 			#define MODE_BRDF

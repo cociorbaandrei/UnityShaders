@@ -95,6 +95,7 @@ fixed4 frag(PIO process, uint isFrontFace : SV_IsFrontFace) : SV_Target
 {
 	//get the uv coordinates and set the base color.
 	fixed4 color = tex2D(_MainTex, process.uv) * _Color;
+	float finalAlpha = color.a;
 
 	if (_NormalScale > 0) {
 		applyNormalMap(process);
@@ -120,9 +121,11 @@ fixed4 frag(PIO process, uint isFrontFace : SV_IsFrontFace) : SV_Target
 		color = applyReflectionProbe(color, process, _Smoothness, _Reflectiveness);
 	}
 
+	color = saturate(color);
 	#if defined(MODE_TCUT) || defined(MODE_OPAQUE)
 		color.a = 1;
+	#else 
+		color.a = finalAlpha;
 	#endif
-		
-	return saturate(color);
+	return color;
 }

@@ -28,6 +28,7 @@ struct PIO
 #if defined(VERTEXLIGHT_ON)
 	float3 vcolor : VCOLOR;
 #endif
+
 #if !defined(UNITY_PASS_SHADOWCASTER)
 	SHADOW_COORDS(7)
 #endif
@@ -62,6 +63,15 @@ float4 _MaskGlowColor;
 float _MaskRainbow;
 float _MaskGlowSpeed;
 float _MaskGlowSharpness;
+
+sampler2D _CameraGBufferTexture0;
+sampler2D _CameraGBufferTexture1;
+sampler2D _CameraGBufferTexture2;
+sampler2D _CameraGBufferTexture4;
+
+#if defined (SHADOWS_SCREEN)
+//sampler2D _ShadowMapTexture;
+#endif
 
 float3 Shade4PointLightsFixed(
 	float4 lightPosX, float4 lightPosY, float4 lightPosZ,
@@ -292,6 +302,16 @@ fixed4 applyMaskLayer( PIO process, fixed4 inColor )
 	return outColor;
 }
 
+float GetShadowMaskAttenuation(float2 uv) {
+	float attenuation = 1;
+#if defined (SHADOWS_SHADOWMASK)
+	float4 mask = tex2D(_CameraGBufferTexture4, uv);
+	attenuation = saturate(dot(mask, unity_OcclusionMaskSelector));
+#endif
+	return attenuation;
+}
+
+#if !UNITY_PASS_SHADOWCASTER
 //keep in mind to always add lights. But multiply the sum to the final color. 
 //This method applies ambient light from directional and lightprobes.
 fixed4 applyLight(PIO process, fixed4 color) {
@@ -323,7 +343,6 @@ fixed4 applyLight(PIO process, fixed4 color) {
 #if defined(UNITY_PASS_FORWARDADD)
 	//get directional color:
 	half3 lightColor = _LightColor0.rgb * brightness * attenuation;
-	color.rgb *= lightColor;
 #else
 	half3 lightColor;
 
@@ -337,14 +356,16 @@ fixed4 applyLight(PIO process, fixed4 color) {
 	directColor *= directBrightness;
 	if (attenuation > 0) { //this is because sometimes the direct light breaks and doesn't have an attenuation of 1.0 when it should.
 		directColor *= attenuation;
+		lightColor += directColor;
 	}
-	lightColor += directColor;
 
-#ifdef VERTEXLIGHT_ON
-	lightColor += max( 0, process.vcolor);
+	#ifdef VERTEXLIGHT_ON
+		lightColor += max( 0, process.vcolor);
+	#endif
 #endif
+	//Finally apply shadows and final light color
 	color.rgb *= lightColor;
-#endif
 
 	return color;
 }
+#endif

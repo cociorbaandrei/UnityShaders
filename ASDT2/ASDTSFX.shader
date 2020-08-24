@@ -61,6 +61,7 @@
 			#define VERTEXLIGHT_ON
 			#define FORWARDBASE
 			#define MODE_TCUT
+			#pragma multi_compile _ SHADOWS_SCREEN
 
 			#include "ASDT2.Globals.cginc"
 			#include "ASDTSFX.Bump.cginc"
