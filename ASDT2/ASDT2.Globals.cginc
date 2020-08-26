@@ -165,13 +165,14 @@ PIO adjustProcess(PIO process, uint isFrontFace)
 	return process;
 }
 
-float ToonDot(float3 direction, float3 normal) 
+float ToonDot(float3 direction, float3 normal, float attenuation) 
 {
 	//The inputs on this should not be normalize, because for something with
 	//spherical harmonics, it will be destroyed. If need be, normalize
 	//before passing to this method.
 	//dotal can be from -1 to 1, so do this math to bring it to a range of 0 to 1
 	float d = (dot( direction, normal ) + 1) / 2;
+	d *= attenuation;
 	float m = (dot(direction, normalize(direction)) + 1) / 2;
 	float e = _ShadePivot - d;
 	if (_ShadeSoftness > 0) {
@@ -318,24 +319,24 @@ fixed4 applyLight(PIO process, fixed4 color) {
 	/************************
 	* Brightness / toon edge:
 	************************/
+	UNITY_LIGHT_ATTENUATION(attenuation, process, process.worldPosition);
+
 #if defined(UNITY_PASS_FORWARDADD)
 	//foward add lighting and details from pixel lights.
 	float3 direction = normalize(_WorldSpaceLightPos0.xyz - process.worldPosition.xyz);
-	float brightness = ToonDot(direction, process.worldNormal);
+	float brightness = ToonDot(direction, process.worldNormal, attenuation);
 #else
 	//Calculate light probes from foward base.
 	float3 ambientDirection = unity_SHAr.xyz + unity_SHAg.xyz + unity_SHAb.xyz; //do not normalize
-	float brightness = ToonDot(ambientDirection, process.worldNormal.xyz);
+	float brightness = ToonDot(ambientDirection, process.worldNormal.xyz, attenuation);
 	//needs to also consider L2 harmonics
 	/*
 	ambientDirection = unity_SHBr.xyz + unity_SHBg.xyz + unity_SHBb.xyz; //do not normalize
 	brightness += ToonDot(ambientDirection, process.worldNormal.xyz);
 	*/
 	//just add the directional light.
-	float directBrightness = ToonDot(normalize(_WorldSpaceLightPos0.xyz), process.worldNormal.xyz);
+	float directBrightness = ToonDot(normalize(_WorldSpaceLightPos0.xyz), process.worldNormal.xyz, attenuation);
 #endif
-
-	UNITY_LIGHT_ATTENUATION(attenuation, process, process.worldPosition);
 
 	/************************
 	* Color:
@@ -347,21 +348,19 @@ fixed4 applyLight(PIO process, fixed4 color) {
 	half3 lightColor;
 
 	//ambient color (lightprobes):
-	half3 probeColor = max( 0, ShadeSH9(float4(0, 0, 0, 1) ) );
 	if (!isnan(brightness)) {
+		half3 probeColor = max( 0, ShadeSH9(float4(0, 0, 0, 1) ) );
 		probeColor *= brightness;
 		lightColor = probeColor;
 	}
 	else {
 		lightColor = 1;
 	}
-	
 
 	//direct color
-	half3 directColor = max( 0, _LightColor0.rgb);
-	directColor *= directBrightness;
 	if (!isnan(directBrightness)) { //this is because sometimes the direct light breaks and doesn't have an attenuation of 1.0 when it should.
-		directColor *= attenuation;
+		half3 directColor = max( 0, _LightColor0.rgb);
+		directColor *= directBrightness;
 		lightColor += directColor;
 	}
 
@@ -369,6 +368,7 @@ fixed4 applyLight(PIO process, fixed4 color) {
 		lightColor += max( 0, process.vcolor);
 	#endif
 #endif
+
 	//Finally apply shadows and final light color
 	color.rgb *= lightColor;
 
