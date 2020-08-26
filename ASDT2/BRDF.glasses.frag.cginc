@@ -25,24 +25,24 @@ fixed4 glassesEffect(PIO process, fixed4 color) {
 	/************************
 	* Brightness / toon edge:
 	************************/
+	UNITY_LIGHT_ATTENUATION(attenuation, process, process.worldPosition);
+	if (isnan(attenuation))attenuation = 1;
 #if defined(UNITY_PASS_FORWARDADD)
 	//foward add lighting and details from pixel lights.
 	float3 direction = normalize(_WorldSpaceLightPos0.xyz - process.worldPosition.xyz);
-	float brightness = ToonDot(direction, process.worldNormal);
+	float brightness = ToonDot(direction, process.worldNormal, attenuation);
 #else
 	//Calculate light probes from foward base.
 	float3 ambientDirection = unity_SHAr.xyz + unity_SHAg.xyz + unity_SHAb.xyz; //do not normalize
-	float brightness = ToonDot(ambientDirection, process.worldNormal.xyz);
+	float brightness = ToonDot(ambientDirection, process.worldNormal.xyz,1);
 	//needs to also consider L2 harmonics
 	/*
 	ambientDirection = unity_SHBr.xyz + unity_SHBg.xyz + unity_SHBb.xyz; //do not normalize
 	brightness += ToonDot(ambientDirection, process.worldNormal.xyz);
 	*/
 	//just add the directional light.
-	float directBrightness = ToonDot(normalize(_WorldSpaceLightPos0.xyz), process.worldNormal.xyz);
+	float directBrightness = ToonDot(normalize(_WorldSpaceLightPos0.xyz), process.worldNormal.xyz, attenuation);
 #endif
-
-	UNITY_LIGHT_ATTENUATION(attenuation, process, process.worldPosition);
 
 	/************************
 	* Color:
