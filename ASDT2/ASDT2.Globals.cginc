@@ -319,6 +319,8 @@ fixed4 applyLight(PIO process, fixed4 color) {
 	/************************
 	* Brightness / toon edge:
 	************************/
+	//I supply the attenuation to the ToonDot, to be the constant muliplier with dotl calculation, 
+	//Before the toon ramp is calculated.
 	UNITY_LIGHT_ATTENUATION(attenuation, process, process.worldPosition);
 
 #if defined(UNITY_PASS_FORWARDADD)
