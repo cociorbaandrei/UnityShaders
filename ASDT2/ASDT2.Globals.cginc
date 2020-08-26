@@ -322,7 +322,9 @@ fixed4 applyLight(PIO process, fixed4 color) {
 	//I supply the attenuation to the ToonDot, to be the constant muliplier with dotl calculation, 
 	//Before the toon ramp is calculated.
 	UNITY_LIGHT_ATTENUATION(attenuation, process, process.worldPosition);
-
+	if (isnan(attenuation)) {
+		attenuation = 1;
+	}
 #if defined(UNITY_PASS_FORWARDADD)
 	//foward add lighting and details from pixel lights.
 	float3 direction = normalize(_WorldSpaceLightPos0.xyz - process.worldPosition.xyz);
@@ -330,7 +332,7 @@ fixed4 applyLight(PIO process, fixed4 color) {
 #else
 	//Calculate light probes from foward base.
 	float3 ambientDirection = unity_SHAr.xyz + unity_SHAg.xyz + unity_SHAb.xyz; //do not normalize
-	float brightness = ToonDot(ambientDirection, process.worldNormal.xyz, attenuation);
+	float brightness = ToonDot(ambientDirection, process.worldNormal.xyz, 1);
 	//needs to also consider L2 harmonics
 	/*
 	ambientDirection = unity_SHBr.xyz + unity_SHBg.xyz + unity_SHBb.xyz; //do not normalize
