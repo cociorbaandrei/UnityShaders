@@ -22,21 +22,27 @@ Shader "Skuld/Phase In"
 
 		[space]
 		_MainTex("Base Layer", 2D) = "black" {}
-		_TCut("Transparent Cutout",Range(0,1)) = 1
-		_FresnelColor("Fresnel Color", Color)=(1, 1, 1, 1)
+		_Color("Base Color",Color) = (1,1,1,1)
+		[Normal] _NormalTex("Normal Map", 2D) = "(1,1,1,1)" {}
+		_NormalScale("Normal Amount", Range(0,1)) = 1.0
+		_FresnelColor("Fresnel Color", Color) = (1, 1, 1, 1)
 		_FresnelRetract("Fresnel Retract", Range(0,10)) = 0.5
+		_Smoothness("Smoothness", Range(0,1)) = 0
+		_Reflectiveness("Reflectiveness",Range(0,1)) = 1
+		[KeywordEnum(Lerp,Multiply,Additive)] _ReflectType("Reflection Type",Float) = 0
+		_TCut("Transparent Cutout",Range(0,1)) = 1
 
 		[space]
 		_MaskTex("Mask Layer", 2D) = "black" {}
 		[Toggle] _MaskGlow("Mask Glow", Float) = 0
-		_MaskGlowColor("Glow Color", Color)=(1, 1, 1, 1)
+		_MaskGlowColor("Glow Color", Color) = (1, 1, 1, 1)
 		[Toggle] _MaskRainbow("Rainbow Effect", Float) = 0
 		_MaskGlowSpeed("Glow Speed",Range(0,10)) = 1
 		_MaskGlowSharpness("Glow Sharpness",Range(1,200)) = 1.0
 	}
 
 	SubShader {
-		Tags { "RenderType"="TransparentCutout" "Queue"="Geometry+1"}
+		Tags { "RenderType"="Opaque" "Queue"="Geometry"}
 
         Blend[_SrcBlend][_DstBlend]
         BlendOp[_BlendOp]
@@ -57,12 +63,13 @@ Shader "Skuld/Phase In"
 			#pragma target 5.0
 			#pragma vertex vert
 			#pragma geometry geom
-			#pragma fragment frag novertexlights nolighting
+			#pragma fragment frag
 
-			#pragma multi_compile
+			#pragma multi_compile _ VERTEXLIGHT_ON
+			#define MODE_BRDF
 
 			#include "../ASDT2/ASDT2.Globals.cginc"
-			#include "../ASDT2/ASDT2.FowardBase.cginc"
+			#include "../ASDT2/BRDF.frag.cginc"
 			
 			float _Step;
 			float _Spread;

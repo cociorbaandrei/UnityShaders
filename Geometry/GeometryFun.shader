@@ -15,15 +15,16 @@
 			Cull Off
 
 			CGPROGRAM
-			#pragma target 4.0
+			#pragma target 5.0
 			#pragma geometry geom
 			#pragma vertex vert
 			#pragma fragment frag
 
 			#include "UnityCG.cginc"
+			#include "Lighting.cginc"
+			#include "AutoLight.cginc"
+			#include "UnityPBSLighting.cginc"
 
-			#pragma multi_compile_prepassfinal noshadowmask nodynlightmap nodirlightmap nolightmap
-		
 			struct appdata
 			{
 				float4 position : POSITION;
@@ -77,8 +78,6 @@
 				float2 uv = input.uv;
 				uv[0] = ( ( (uv[0] + _Time) * 1000 ) % 100 ) / 100;
 				uv[1] = ( ( (uv[1] * _Time) * 1000 ) % 100 ) / 100;
-				//uv[0] = .5;
-				//uv[1] = .5;
 				fixed4 c = tex2D(_MainTex, uv);
 				return c;
 			}

@@ -22,9 +22,15 @@ Shader "Skuld/Geometry Fun 3"
 
 		[space]
 		_MainTex("Base Layer", 2D) = "black" {}
-		_TCut("Transparent Cutout",Range(0,1)) = 1
-		_FresnelColor("Fresnel Color", Color)=(1, 1, 1, 1)
+		_Color("Base Color",Color) = (1,1,1,1)
+		[Normal] _NormalTex("Normal Map", 2D) = "(1,1,1,1)" {}
+		_NormalScale("Normal Amount", Range(0,1)) = 1.0
+		_FresnelColor("Fresnel Color", Color) = (1, 1, 1, 1)
 		_FresnelRetract("Fresnel Retract", Range(0,10)) = 0.5
+		_Smoothness("Smoothness", Range(0,1)) = 0
+		_Reflectiveness("Reflectiveness",Range(0,1)) = 1
+		[KeywordEnum(Lerp,Multiply,Additive)] _ReflectType("Reflection Type",Float) = 0
+		_TCut("Transparent Cutout",Range(0,1)) = 1
 
 		[space]
 		_MaskTex("Mask Layer", 2D) = "black" {}
@@ -60,9 +66,10 @@ Shader "Skuld/Geometry Fun 3"
 			#pragma fragment frag novertexlights nolighting
 
 			#pragma multi_compile
+			#define MODE_BRDF
 
 			#include "../ASDT2/ASDT2.Globals.cginc"
-			#include "../ASDT2/ASDT2.FowardBase.cginc"
+			#include "../ASDT2/BRDF.frag.cginc"
 			
 			float _Step;
 			float _Distance;

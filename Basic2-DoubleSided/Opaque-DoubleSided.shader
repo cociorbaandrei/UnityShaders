@@ -1,28 +1,17 @@
-﻿Shader "Skuld/Basics 2 (Transparent Cutout)"
+﻿Shader "Skuld/Basics 2 Double Sided"
 {
 	Properties
 	{
-		[KeywordEnum(Cutout)] _Mode("Shader Type",Float ) = 0
+		[KeywordEnum(Opaque)] _Mode("Shader Type",Float ) = 0
 		_Color ("Base Color",Color) = (1,1,1,1)
 
-		_MainTex("Layer 1 Texture", 2D) = "white" {}
-		_TCut("Transparent Cutout",Range(0,1)) = .5
-		[Toggle(_UNLITL1)] _UnlitLayer1("Layer 1 Unlit",Float) = 0
-		_Smoothness("Layer 1 Smoothness", Range(0,1)) = 0
-		_Reflectiveness("Layer 1 Reflectiveness",Range(0,1)) = 1
+		_MainTex("Side 1 Texture", 2D) = "white" {}
+		[Toggle(_UNLITL1)] _UnlitLayer1("Unlit",Float) = 0
+		_Smoothness("Smoothness", Range(0,1)) = 0
+		_Reflectiveness("Reflectiveness",Range(0,1)) = 1
 
-		[Toggle(_DUALTEXTURE)] _DualTexture("====== Dual Texture Mode =====",Float) = 0
-		_Tex2 ("Layer 2 Texture", 2D) = "white" {}
-		[Toggle(_UNLITL2)]_UnlitLayer2 ("Layer 2 Unlit",Float) = 0
-		_SmoothnessL2("Layer 2 Smoothness", Range(0,1)) = 0
-		_ReflectivenessL2("Layer 2 Reflectiveness",Range(0,1)) = 1
-
-		[Toggle(_GLOW)]_GlowLayer2 ("Layer 2 Glow",Float) = 0
-		_GlowSpeed ("Layer 2 Glow Speed",Range(1,1000)) = 1
-		_GlowSpread ("Layer 2 Glow Spread",Range(1,10)) = 1
-		_GlowSharpness("Layer 2 Glow Sharpness",Range(0,1)) = 0
-		_GlowColor ("Layer 2 Glow Color",Color) = (1,1,1,1)
-		[KeywordEnum(X,Y,Z)] _GlowDirection("Layer 2 Glow Direction",Float) = 0
+		[Toggle(_DUALTEXTURE)] _DualTexture("====== Double Sided Texture Mode =====",Float) = 0
+		_Tex2 ("Side 2 Texture", 2D) = "white" {}
 
 		[Toggle(_NORMALMAP)] _Normalmap("===== Normalmap =====",Float) = 0
 		[Normal]_NormalTex("Normal Map", 2D) = "black" {}
@@ -43,7 +32,7 @@
 	}
 	SubShader
 	{
-		Tags { "RenderType"="TransparentCutout" "Queue"="AlphaTest"}
+		Tags { "RenderType"="Opaque" "Queue"="Geometry"}
 		LOD 10
 
 		Cull[_CullMode]
@@ -58,7 +47,7 @@
 			#pragma vertex vert
 			#pragma fragment frag
 			// make fog work
-			#pragma multi_compile _MODE_CUTOUT
+			#pragma multi_compile _MODE_OPAQUE
 			#pragma shader_feature _DUALTEXTURE
 			#pragma shader_feature _UNLITL1 
 			#pragma shader_feature _UNLITL2
@@ -71,11 +60,7 @@
 			#pragma multi_compile_fog
 			#pragma multi_compile_instancing
 			#pragma multi_compile_fwdbase
-			/*
-			The problem with GPU Instancing:
-			In your vertex shader, UNITY_VERTEX_INPUT_INSTANCE_ID is declared in your input struct, UNITY_SETUP_INSTANCE_ID is used before accessing any instanced property, and UNITY_TRANSFER_INSTANCED_ID is called in order to feed the fragment shader input.
-			In your fragment shader, UNITY_VERTEX_INPUT_INSTANCE_ID is declared in your input struct, and UNITY_SETUP_INSTANCE_ID is used before accessing any instanced property.
-			*/
+			
 			#include "UnityCG.cginc"
 			#include "AutoLight.cginc"
 			#include "Lighting.cginc"
@@ -93,7 +78,7 @@
 			#pragma vertex vert
 			#pragma fragment frag
 			// make fog work
-			#pragma multi_compile_local _MODE_CUTOUT
+			#pragma multi_compile_local _MODE_OPAQUE
 			#pragma shader_feature _DUALTEXTURE
 			#pragma shader_feature _UNLITL1 
 			#pragma shader_feature _UNLITL2 

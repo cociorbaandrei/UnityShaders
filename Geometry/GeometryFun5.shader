@@ -42,6 +42,7 @@ Shader "Skuld/Geometry Fun 5"
 
 			#pragma multi_compile_instancing
 			#pragma multi_compile_fullshadows
+			#pragma multi_compile _ VERTEXLIGHT_ON
 
 
 			#include "UnityCG.cginc"
@@ -201,43 +202,43 @@ Shader "Skuld/Geometry Fun 5"
 				return position;
 			}
 
-			float4 GetLightPosition()
+			float4 GetLightPosition(int i)
 			{
-				for(int i = 0; i < 4; i++)
+				float4 p = float4(0,0,0,0);
+				if (unity_LightColor[i].w == _LightCode)
 				{
-					if(unity_LightColor[i].w != _LightCode)
-						continue;
-					float4 p;
 					p.x = unity_4LightPosX0[i];
 					p.y = unity_4LightPosY0[i];
 					p.z = unity_4LightPosZ0[i];
 					p.w = 5 * rsqrt(unity_4LightAtten0[i]);//range = success
-					return p;
 				}
-				float4 p = float4(0,0,0,0);
-				return p;//0 = error
+				return p;
 			}
 
-			float3 DodgeLight( float3 position ){
+			float3 DodgeLight(float3 position) {
 				float3 output = position;
 
-				float4 lightPos = GetLightPosition();
-				if (lightPos.w > 0){
-					if ( position.y > lightPos.y ){
-						float3 diff = output - lightPos.xyz;
-						float len = length(diff);
-						if ( len < lightPos.w ){
-							output += normalize(diff) * (lightPos.w - len);
+				for (int i = 0; i < 4; i++) {
+					int index = i;
+					float4 lightPos = GetLightPosition(index);
+					if(lightPos.w > 0)
+					{
+						if (position.y > lightPos.y) {
+							float3 diff = output - lightPos.xyz;
+							float len = length(diff);
+							if (len < lightPos.w) {
+								output += normalize(diff) * (lightPos.w - len);
+							}
 						}
-					} else {
-						float2 diff = output.xz - lightPos.xz;
-						float len = length(diff);
-						if ( len < lightPos.w ){
-							output.xz += normalize(diff) * (lightPos.w - len);
+						else {
+							float2 diff = output.xz - lightPos.xz;
+							float len = length(diff);
+							if (len < lightPos.w) {
+								output.xz += normalize(diff) * (lightPos.w - len);
+							}
 						}
 					}
 				}
-
 				return output;
 			}
 
