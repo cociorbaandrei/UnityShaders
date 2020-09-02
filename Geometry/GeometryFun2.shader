@@ -1,6 +1,6 @@
 ﻿// Upgrade NOTE: replaced '_Object2World' with 'unity_ObjectToWorld'
 
-Shader "Skuld/Geometry Fun 2"
+Shader "Skuld/Effects/Geometry/Geometry Fun 2 (A Spikey Mess)"
 {
 	Properties {
 		_MainTex("Noise Texture", 2D) = "gray" {}

@@ -1,4 +1,4 @@
-﻿Shader "Skuld/Fade, Deform and Edge"
+﻿Shader "Skuld/Effects/Fade, Deform and Edge"
 {
 	Properties {
 		_MainTex("Base (RGB)", 2D) = "gray" {}

@@ -1,4 +1,4 @@
-﻿Shader "Skuld/Grabpass/Warp Type 2"
+﻿Shader "Skuld/Effects/Grab Pass/Warp Type 2"
 {
 	Properties{
 

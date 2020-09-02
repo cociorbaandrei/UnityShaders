@@ -1,4 +1,4 @@
-﻿Shader "Skuld/Animated Texture"
+﻿Shader "Skuld/Effects/Animated Texture"
 {
 	Properties {
 		_MainTex("Animation Texture (Remember when building your map, first frame is bottome left)", 2D) = "black" {}

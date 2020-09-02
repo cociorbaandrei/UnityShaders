@@ -1,4 +1,4 @@
-﻿Shader "Skuld/Clouds"
+﻿Shader "Skuld/Effects/Clouds"
 {
 	Properties
 	{

@@ -1,4 +1,4 @@
-﻿Shader "Skuld/Basics 2"
+﻿Shader "Skuld/Deprecated/Basics 2"
 {
 	Properties
 	{

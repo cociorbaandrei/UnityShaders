@@ -1,4 +1,4 @@
-﻿Shader "Skuld/Bubbles No Deform"
+﻿Shader "Skuld/Effects/Grab Pass/Bubbles No Deform"
 {
 	Properties{
 		_Depth("Depth", Range(-10,10)) = 1

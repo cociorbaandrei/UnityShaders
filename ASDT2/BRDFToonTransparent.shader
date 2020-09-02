@@ -1,4 +1,4 @@
-﻿Shader "Skuld/BRDF Toon Transparent"
+﻿Shader "Skuld/Deprecated/BRDF Toon Transparent"
 {
 	Properties {
 		[space]

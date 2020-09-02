@@ -1,4 +1,4 @@
-﻿Shader "Skuld/Basics/Unlit Transparent Multi Layer Rotate"
+﻿Shader "Skuld/Deprecated/Basics/Unlit Transparent Multi Layer Rotate"
 {
 	Properties
 	{

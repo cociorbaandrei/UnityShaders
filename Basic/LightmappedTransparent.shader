@@ -1,4 +1,4 @@
-﻿Shader "Skuld/Basics/Lightmapped Transparent"
+﻿Shader "Skuld/Deprecated/Basics/Lightmapped Transparent"
 {
 	Properties
 	{

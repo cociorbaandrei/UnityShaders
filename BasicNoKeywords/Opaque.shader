@@ -1,4 +1,4 @@
-﻿Shader "Skuld/Basics - No Keywords"
+﻿Shader "Skuld/Deprecated/Basics - No Keywords"
 {
 	Properties
 	{

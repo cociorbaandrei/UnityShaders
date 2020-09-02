@@ -1,4 +1,4 @@
-﻿Shader "Skuld/BRDF Toon Opaque (Socks)"
+﻿Shader "Skuld/Deprecated/BRDF Toon Opaque (Socks)"
 {
 	Properties {
 		_CloudStretch("Cloud Width",float) = 5

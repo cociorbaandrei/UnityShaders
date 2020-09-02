@@ -1,4 +1,4 @@
-﻿Shader "Skuld/Grabpass/Glass"
+﻿Shader "Skuld/Effects/Grab Pass/Glass"
 {
 	Properties{
 		_Depth("Depth", Range(-10,10)) = 1

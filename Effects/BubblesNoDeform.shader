@@ -1,4 +1,4 @@
-﻿Shader "Skuld/Bubbles No Deform"
+﻿Shader "Skuld/Effects/Bubbles No Deform"
 {
 	Properties{
 

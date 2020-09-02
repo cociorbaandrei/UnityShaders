@@ -1,4 +1,4 @@
-Shader "Skuld/Geometry Fun 5"
+Shader "Skuld/Effects/Geometry/Geometry Fun 5"
 {
 	Properties {
 		_PixelSize("Pixel Size",Range(0,.1)) = .1

@@ -1,4 +1,4 @@
-﻿Shader "Skuld/Geometry Fun"
+﻿Shader "Skuld/Effects/Geometry/Geometry Fun"
 {
 	Properties {
 		_MainTex("Noise Texture", 2D) = "gray" {}
@@ -15,16 +15,15 @@
 			Cull Off
 
 			CGPROGRAM
-			#pragma target 5.0
+			#pragma target 4.0
 			#pragma geometry geom
 			#pragma vertex vert
 			#pragma fragment frag
 
 			#include "UnityCG.cginc"
-			#include "Lighting.cginc"
-			#include "AutoLight.cginc"
-			#include "UnityPBSLighting.cginc"
 
+			#pragma multi_compile_prepassfinal noshadowmask nodynlightmap nodirlightmap nolightmap
+		
 			struct appdata
 			{
 				float4 position : POSITION;
@@ -49,7 +48,7 @@
 				for ( int i = 0; i < 2; i++ ) {
 					v2f vert;
 					vert.uv = input[i].uv;
-					vert.position = UnityObjectToClipPos(input[i].position);
+					vert.position = UnityObjectToClipPos(input[i].position);//local to world position.			
 					vert.normal = input[i].normal;
 					tristream.Append(vert);
 				}
@@ -66,7 +65,6 @@
 			}
 
 			v2f vert ( appdata v) {
-				//for some reason this is required, and all it does is copy everything along.
 				v2f o;
 				o.position = v.position;
 				o.uv = TRANSFORM_TEX(v.uv,_MainTex);
@@ -78,6 +76,8 @@
 				float2 uv = input.uv;
 				uv[0] = ( ( (uv[0] + _Time) * 1000 ) % 100 ) / 100;
 				uv[1] = ( ( (uv[1] * _Time) * 1000 ) % 100 ) / 100;
+				//uv[0] = .5;
+				//uv[1] = .5;
 				fixed4 c = tex2D(_MainTex, uv);
 				return c;
 			}

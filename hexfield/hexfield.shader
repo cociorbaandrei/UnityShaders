@@ -1,4 +1,4 @@
-﻿Shader "Skuld/HexField"
+﻿Shader "Skuld/Effects/HexField"
 {
 	Properties
 	{

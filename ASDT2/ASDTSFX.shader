@@ -1,4 +1,4 @@
-﻿Shader "Skuld/Advance Shading + Dual Texture SFX"
+﻿Shader "Skuld/Deprecated/Advance Shading + Dual Texture SFX"
 {
 	Properties {
 		[space]

@@ -1,4 +1,4 @@
-Shader "Skuld/Ray Marching Fun"
+Shader "Skuld/Effects/Ray Marching Fun (Infinisphere)"
 {
 	Properties {
 		_MainTex("Noise Texture", 2D) = "gray" {}

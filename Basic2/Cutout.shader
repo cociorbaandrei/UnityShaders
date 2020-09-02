@@ -1,4 +1,4 @@
-﻿Shader "Skuld/Basics 2 (Transparent Cutout)"
+﻿Shader "Skuld/Deprecated/Basics 2 (Transparent Cutout)"
 {
 	Properties
 	{

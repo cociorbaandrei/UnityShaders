@@ -1,4 +1,4 @@
-﻿Shader "Skuld/Scrolling Texture Multi-Layer"
+﻿Shader "Skuld/Animation/Scrolling Texture Multi-Layer"
 {
 	Properties
 	{	

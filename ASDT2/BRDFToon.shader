@@ -1,4 +1,4 @@
-﻿Shader "Skuld/BRDF Toon"
+﻿Shader "Skuld/Deprecated/BRDF Toon"
 {
 	Properties {
 		[space]

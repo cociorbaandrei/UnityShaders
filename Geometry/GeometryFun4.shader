@@ -3,7 +3,7 @@ This looks the same as 2.... but...
 try putting say a heart as the mesh, or static image, Then you'll be rewarded with something fun.
 Plus there's no spiking, just the entire mesh growing and shrinking.
 */
-Shader "Skuld/Geometry Fun 4"
+Shader "Skuld/Effects/Geometry/Geometry Fun 4 (Rotating, replicated mesh)"
 {
 	Properties {
 		_MainTex("Noise Texture", 2D) = "gray" {}

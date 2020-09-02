@@ -1,4 +1,4 @@
-﻿Shader "Skuld/Basics/Toon"
+﻿Shader "Skuld/Deprecated/Basics/Toon"
 {
     Properties
     {

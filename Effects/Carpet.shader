@@ -1,18 +1,19 @@
-﻿Shader "Skuld/Carpet(Old)"
+﻿Shader "Skuld/Effects/Carpet"
 {
 	Properties
 	{
 		_CarpetColor ("Color",Color) = (1,0,0,1)
 		_MainTex ("Texture", 2D) = "white" {}
-		_Height ("Height",float) = 1
-		[KeywordEnum(XAxis, YAxis, ZAxis, Normal)] _Direction ("Direction",int) = 0
-		_Size( "Fuzzy Square Size", float ) = 0
-		_XRand ("X Randomness", float) = 1
-		_YRand ("Y Randomness", float) = 1
-		_Radius ("Radius",range(0,.5)) = .5
-		_CMin ("Minimum Brightness",range(0,1)) = 0
-		_LBright ("Lightmap Increase",range(0,1)) = 0
-		_MaxInstances ("Number of Layers",range(1,32)) = 0
+		_Height("Height",float) = 1
+		[KeywordEnum(XAxis, YAxis, ZAxis, Normal)] _Direction("Direction",int) = 0
+		_Size("Fuzzy Square Size", float) = 0
+		_XRand("X Randomness", float) = 1
+		_YRand("Y Randomness", float) = 1
+		_Radius("Radius",range(0,.5)) = .5
+		_CMin("Minimum Brightness",range(0,1)) = 0
+		_LBright("Lightmap Increase",range(0,1)) = 0
+		_MaxInstances("Number of Layers",range(1,32)) = 0
+		_UVScale("UV Scale",float) = 1
 		[Toggle(_)] _DisableLightMaps ("Disable Light Maps",float) = 0
 	}
 	SubShader
@@ -69,6 +70,7 @@
 			int _MaxInstances;
 			float _LBright;
 			bool _DisableLightMaps;
+			float _UVScale;
 			
 			v2f vert (appdata v)
 			{
@@ -133,8 +135,8 @@
 				col.rgb *=  iRange * (1-_CMin) + _CMin;
 
 				//might want to make these selectable.
-				cut.x = i.pixelPos.x;
-				cut.y = i.pixelPos.z;
+				cut.x = i.uv.x*_UVScale;
+				cut.y = i.uv.y*_UVScale;
 
 				offset.x = cos(cut.x *_XRand) * _Radius * iRange;
 				offset.y = cos(cut.y *_YRand) * _Radius * iRange;

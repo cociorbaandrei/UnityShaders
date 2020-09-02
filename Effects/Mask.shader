@@ -1,4 +1,4 @@
-﻿Shader "Skuld/Mask"
+﻿Shader "Skuld/Effects/Mask"
 {
 	SubShader
 	{

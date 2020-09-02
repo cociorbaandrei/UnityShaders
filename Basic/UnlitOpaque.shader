@@ -1,4 +1,4 @@
-﻿Shader "Skuld/Basics/Unlit Opaque"
+﻿Shader "Skuld/Deprecated/Basics/Unlit Opaque"
 {
 	Properties
 	{

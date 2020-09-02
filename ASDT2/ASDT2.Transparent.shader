@@ -1,4 +1,4 @@
-﻿Shader "Skuld/Advance Shading + Dual Texture 2 Transparent"
+﻿Shader "Skuld/Deprecated/Advance Shading + Dual Texture 2 Transparent"
 {
 	Properties {
 		[space]

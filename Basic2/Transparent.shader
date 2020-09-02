@@ -1,4 +1,4 @@
-﻿Shader "Skuld/Basics 2 (Transparent)"
+﻿Shader "Skuld/Deprecated/Basics 2 (Transparent)"
 {
 	Properties
 	{

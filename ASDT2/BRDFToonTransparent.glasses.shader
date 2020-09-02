@@ -1,4 +1,4 @@
-﻿Shader "Skuld/BRDF Toon Transparent (Glasses)"
+﻿Shader "Skuld/Deprecated/BRDF Toon Transparent (Glasses)"
 {
 	Properties {
 		_Tinting("Max Tinting",Range(0,1)) = 1.0

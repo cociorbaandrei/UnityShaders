@@ -1,4 +1,4 @@
-Shader "Skuld/Phase In"
+Shader "Skuld/Effects/Phase In"
 {
 	Properties {
 		[space]

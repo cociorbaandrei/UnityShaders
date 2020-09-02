@@ -1,4 +1,4 @@
-﻿Shader "Skuld/ASDT2 Clock"
+﻿Shader "Skuld/Deprecated/ASDT2 Clock"
 {
 	Properties {
 		[space]
@@ -45,7 +45,7 @@
 			#define MODE_OPAQUE
 
 			#include "ASDT2.Globals.cginc"
-			#include "../../VRChatWorldTimeSource/Shaders/VRChatTimeSource.cginc"
+			#include "../../../VRChatWorldTimeSource/Shaders/VRChatTimeSource.cginc"
 			#include "ASDT2.clock.cginc"
 
 			ENDCG

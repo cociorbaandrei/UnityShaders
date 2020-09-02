@@ -1,4 +1,4 @@
-﻿Shader "Skuld/Grab Pass Test"
+﻿Shader "Skuld/Effects/Grab Pass/Test"
 {
 	SubShader {
         // Draw ourselves after all opaque geometry

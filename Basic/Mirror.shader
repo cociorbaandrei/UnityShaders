@@ -1,4 +1,4 @@
-﻿Shader "Skuld/Basics/Mirror"
+﻿Shader "Skuld/Deprecated/Basics/Mirror"
 {
 	Properties
 	{

@@ -1,4 +1,4 @@
-﻿Shader "Skuld/Basics/LightmappedDualTexture"
+﻿Shader "Skuld/Deprecated/Basics/LightmappedDualTexture"
 {
 	Properties
 	{

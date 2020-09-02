@@ -1,4 +1,4 @@
-﻿Shader "Skuld/Rope"
+﻿Shader "Skuld/Effects/Rope"
 {
 	Properties
 	{

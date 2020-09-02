@@ -1,4 +1,4 @@
-﻿Shader "Skuld/Basics/Skybox"
+﻿Shader "Skuld/Deprecated/Basics/Skybox"
 {
     Properties
     {

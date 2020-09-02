@@ -1,4 +1,4 @@
-﻿Shader "Skuld/Bubbles"
+﻿Shader "Skuld/Effects/Bubbles"
 {
 	Properties{
 
