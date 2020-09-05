@@ -1,5 +1,9 @@
 #pragma once
-fixed4 frag( PIO process, uint isFrontFace : SV_IsFrontFace ) : SV_Target
-{
-	SHADOW_CASTER_FRAGMENT(process)
+float GetShadowMaskAttenuation(float2 uv) {
+	float attenuation = 1;
+#if defined (SHADOWS_SHADOWMASK)
+	float4 mask = tex2D(_CameraGBufferTexture4, uv+process.uvOffset);
+	attenuation = saturate(dot(mask, unity_OcclusionMaskSelector));
+#endif
+	return attenuation;
 }
