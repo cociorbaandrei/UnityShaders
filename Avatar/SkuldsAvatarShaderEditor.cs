@@ -1,4 +1,5 @@
 ﻿#if UNITY_EDITOR
+using System.IO;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -98,24 +99,71 @@ public class SkuldsAvatarShaderEditor : ShaderGUI
     public static Texture2D smoothTex;
     public static Texture2D reflectTex;
     public static Texture2D heightTex;
+    public static Texture2D resultTex;
     void FeatureMapCreator()
     {
         featureMapGroup = EditorGUILayout.Foldout(featureMapGroup, "Create Feature Map", header);
         if (featureMapGroup)
         {
             EditorGUILayout.BeginVertical(EditorStyles.textArea);
-            specTex = (Texture2D)EditorGUILayout.ObjectField("Specular Texture:", specTex, typeof(Texture2D), true);
-            smoothTex = (Texture2D)EditorGUILayout.ObjectField("Smooth Texture:", specTex, typeof(Texture2D), true);
-            reflectTex = (Texture2D)EditorGUILayout.ObjectField("Reflection Texture:", specTex, typeof(Texture2D), true);
-            heightTex = (Texture2D)EditorGUILayout.ObjectField("Height Texture:", specTex, typeof(Texture2D), true);
-            EditorGUILayout.HelpBox("These textures need to be grayscale, if not, only the red channel will be used.", MessageType.Info);
+            specTex = (Texture2D)EditorGUILayout.ObjectField("Specular Texture:", specTex, typeof(Texture2D),true);
+            smoothTex = (Texture2D)EditorGUILayout.ObjectField("Smooth Texture:", smoothTex, typeof(Texture2D), true);
+            reflectTex = (Texture2D)EditorGUILayout.ObjectField("Reflection Texture:", reflectTex, typeof(Texture2D), true);
+            heightTex = (Texture2D)EditorGUILayout.ObjectField("Height Texture:", heightTex, typeof(Texture2D), true);
+            resultTex = (Texture2D)EditorGUILayout.ObjectField("Feature Texture (Create a transparent texture):", resultTex, typeof(Texture2D), true);
+            EditorGUILayout.HelpBox("These textures need to be grayscale, if not, only the red channel will be used.\n Warning: Result texture is required, and will be written to. Create an empty image at the desired resolution and place it result slot.", MessageType.Info);
             EditorGUILayout.EndVertical();
             if ( GUILayout.Button("Apply to Feature Texture") )
             {
-
+                MakeFeatureTexture();
             }
         }
     }
+
+    float GetValue(int i, Texture2D tex)
+    {
+        int ix = i % resultTex.width;
+        int iy = i / resultTex.width;
+        int x = (int)(((float)ix / (float)resultTex.width) * resultTex.width);
+        int y = (int)(((float)iy / (float)resultTex.height) * resultTex.height);
+        if (tex)
+        {
+            Color col = tex.GetPixel(x, y);
+            return col.r;
+        } else
+        {
+            return 1.0f;
+        }
+    }
+
+    void MakeFeatureTexture()
+    {
+        if (resultTex == null)
+        {
+            Debug.LogError("Cannot create texture, no result texture specified.");
+        }
+        Color[] colors = resultTex.GetPixels();
+        for ( int i = 0; i < colors.Length; i++)
+        {
+            Color color = new Color(
+                GetValue(i, specTex),
+                GetValue(i, smoothTex),
+                GetValue(i, reflectTex),
+                GetValue(i, heightTex)
+            );
+            colors[i] = color;
+        }
+        Texture2D outputTex = new Texture2D(resultTex.width, resultTex.height, TextureFormat.RGBAFloat,false);
+        outputTex.SetPixels(colors);
+        outputTex.Apply();
+        System.IO.File.WriteAllBytes(
+            UnityEditor.AssetDatabase.GetAssetPath(resultTex),
+            outputTex.EncodeToPNG()
+        );
+        EditorUtility.SetDirty(resultTex);
+        Debug.Log("Saved Features Texture");
+    }
+
 
 
 
