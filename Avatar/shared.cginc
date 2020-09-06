@@ -59,7 +59,7 @@ sampler2D _CameraGBufferTexture2;
 sampler2D _CameraGBufferTexture4;
 
 #if defined (SHADOWS_SCREEN)
-sampler2D _ShadowMapTexture;
+//sampler2D _ShadowMapTexture;
 #endif
 
 PIO adjustProcess(PIO process, uint isFrontFace)

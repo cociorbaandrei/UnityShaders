@@ -31,7 +31,7 @@ float4 applyFresnel(PIO process, float4 inColor) {
 float4 applySpecular(PIO o, float4 color) 
 {
 	UNITY_LIGHT_ATTENUATION(attenuation, o, o.worldPosition);
-	float3 reflectDir = reflect(-o.viewDirection, o.worldNormal);
+	float3 reflectDir = reflect(o.viewDirection, o.worldNormal);
 	Unity_GlossyEnvironmentData envData;
 	envData.roughness = 0;
 	envData.reflUVW = normalize(reflectDir);
@@ -53,9 +53,21 @@ float4 applySpecular(PIO o, float4 color)
 	d = max(0,d);
 	d *= attenuation;
 	d *= _Specular;
-	result *= _LightColor0.rgb;
+	float3 lightColor = _LightColor0.rgb;
+	#if defined(UNITY_PASS_FORWARDBASE)
+		float3 ambientDirection = normalize(unity_SHAr.xyz + unity_SHAg.xyz + unity_SHAb.xyz);
+		float e = dot(ambientDirection, o.worldNormal.xyz);
+		e -= 1 - _SpecularSize;
+		e *= 1 / _SpecularSize;
+		e *= 2;
+		e = max(0, e);
+		e *= _Specular;
+		d = max(e, d);
+		lightColor += max(0,ShadeSH9(float4(0, 0, 0, 1)));
+	#endif
+
+	result *= lightColor;
 	color.rgb = lerp(color.rgb, result, d);
-	
 
 	return color;
 }

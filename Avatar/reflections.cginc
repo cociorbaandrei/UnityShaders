@@ -1,7 +1,7 @@
 #pragma once
 float3 cubemapReflection(float3 color, PIO o, float smooth, float ref)
 {
-	float3 reflectDir = reflect(-o.viewDirection, o.worldNormal);
+	float3 reflectDir = reflect(o.viewDirection, o.worldNormal);
 	Unity_GlossyEnvironmentData envData;
 	envData.roughness = 1 - smooth;
 	envData.reflUVW = normalize(reflectDir);
