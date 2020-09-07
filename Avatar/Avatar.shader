@@ -25,7 +25,8 @@
 		_FresnelRetract("Fresnel Retract", Range(0,10)) = 1.5
 		_SpecularColor("Specular Color", Color) = (1, 1, 1, 1)
 		_Specular("Specular", Range(0,1)) = 0
-		_SpecularSize("Specular Size",Range(.001,1)) = 0
+		_SpecularSize("Specular Size",Range(.001,1)) = .1
+		_SpecularReflection("Specular Reflection",Range(0,1)) = .5
 		_Smoothness("Smoothness", Range(0,1)) = 0
 		_Reflectiveness("Reflectiveness",Range(0,1)) = 1
 		_Height("Height",Range(0,1)) = 0

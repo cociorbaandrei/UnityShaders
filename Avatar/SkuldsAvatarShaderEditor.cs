@@ -74,9 +74,11 @@ public class SkuldsAvatarShaderEditor : ShaderGUI
             EditorGUILayout.LabelField("Specular Extended:", EditorStyles.boldLabel);
             EditorGUILayout.BeginVertical(EditorStyles.textArea);
             MaterialProperty specColor = FindProperty("_SpecularColor", properties);
-            materialEditor.ColorProperty(specColor, "Specular Color:");
+            materialEditor.ColorProperty(specColor, "Color:");
             MaterialProperty specSize = FindProperty("_SpecularSize", properties);
-            materialEditor.RangeProperty(specSize, "Specular Size:");
+            materialEditor.RangeProperty(specSize, "Size:");
+            MaterialProperty specRef = FindProperty("_SpecularReflection", properties);
+            materialEditor.RangeProperty(specRef, "Reflection Balance:");
             EditorGUILayout.EndVertical();
 
             EditorGUILayout.LabelField("Fresnel:", EditorStyles.boldLabel);

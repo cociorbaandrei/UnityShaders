@@ -2,6 +2,7 @@ float4 _SpecularColor;
 float4 _FresnelColor;
 float _FresnelRetract;
 float _SpecularSize;
+float _SpecularReflection;
 
 float4 applyFresnel(PIO process, float4 inColor) {
 #if defined(UNITY_PASS_FORWARDADD)
@@ -39,7 +40,7 @@ float4 applySpecular(PIO o, float4 color)
 	float3 result = Unity_GlossyEnvironment(UNITY_PASS_TEXCUBE(unity_SpecCube0), unity_SpecCube0_HDR, envData);
 	float spec0interpolationStrength = unity_SpecCube0_BoxMin.w;
 
-	result = lerp(_SpecularColor.rgb, result, _Reflectiveness );
+	result = lerp(_SpecularColor.rgb, result, _SpecularReflection);
 	float3 direction = float3(0, 0, 0);
 	#if defined(UNITY_PASS_FORWARDADD)
 		direction = -normalize(o.worldPosition.xyz - _WorldSpaceLightPos0.xyz);
