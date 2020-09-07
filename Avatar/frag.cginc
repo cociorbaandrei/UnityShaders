@@ -23,17 +23,19 @@ float4 frag(PIO process, uint isFrontFace : SV_IsFrontFace) : SV_Target
 	//if the mask is set to glow, apply it after lights, else apply it before lightighting it.
 	if (_DetailUnlit) {
 		color = applyLight(process, color);
-		#if !UNITY_PASS_FORWARDADD
+		#ifndef UNITY_PASS_FORWARDADD
 			color = applyDetailLayer(process, color);
+			//skip detail layer if foward add?
+			color = applyReflectionProbe(color, process, _Smoothness, _Reflectiveness);
 		#endif
-		//skip detail layer if foward add?
-		color = applyReflectionProbe(color, process, _Smoothness, _Reflectiveness);
 		color = applySpecular(process, color);
 	}
 	else 
 	{
 		color = applyDetailLayer(process, color);
-		color = applyReflectionProbe(color, process, _Smoothness, _Reflectiveness);
+		#ifndef UNITY_PASS_FORWARDADD
+			color = applyReflectionProbe(color, process, _Smoothness, _Reflectiveness);
+		#endif
 		color = applyLight(process, color);
 		color = applySpecular(process, color);
 	}

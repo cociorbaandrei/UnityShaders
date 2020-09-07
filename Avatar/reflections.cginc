@@ -22,12 +22,12 @@ float3 cubemapReflection(float3 color, PIO o, float smooth, float ref)
 		}
 
 	//apply the amount the reflective surface is allowed to affect:
-	result *= ref;
+	//result *= ref;
 
 	switch (_ReflectType) {
 	default:
 	case 0:
-		result = lerp(color, result, smooth);
+		result = lerp(color, result, ref);
 		break;
 	case 1:
 		result = result * color;
@@ -40,11 +40,8 @@ float3 cubemapReflection(float3 color, PIO o, float smooth, float ref)
 }
 
 float4 applyReflectionProbe(float4 col, inout PIO i, float smooth, float ref) {
-#ifndef UNITY_PASS_FORWARDADD
-	//Reflects 2nd to last
-	if (smooth > 0.0f) {
+	if (ref > 0.0f) {
 		col.rgb = cubemapReflection(col.rgb, i, smooth, ref);
 	}
-#endif
 	return col;
 }
