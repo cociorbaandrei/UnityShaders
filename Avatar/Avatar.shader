@@ -30,7 +30,7 @@
 		_Smoothness("Smoothness", Range(0,1)) = 0
 		_Reflectiveness("Reflectiveness",Range(0,1)) = 1
 		_Height("Height",Range(0,1)) = 0
-		[KeywordEnum(Lerp,Multiply,Additive)] _ReflectType("Reflection Type",Float) = 0
+		_ReflectType("Reflection Type",Int) = 0
 		
 		[space]
 		_DetailLayer("Enable Detail Layer",Int) = 0
