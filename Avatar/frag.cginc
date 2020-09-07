@@ -24,6 +24,7 @@ float4 frag(PIO process, uint isFrontFace : SV_IsFrontFace) : SV_Target
 	if (_DetailUnlit) {
 		color = applyLight(process, color);
 		color = applyDetailLayer(process, color);
+		//skip detail layer if foward add?
 		color = applyReflectionProbe(color, process, _Smoothness, _Reflectiveness);
 		color = applySpecular(process, color);
 	}
