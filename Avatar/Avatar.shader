@@ -79,6 +79,7 @@
 			#pragma target 5.0
 			#pragma vertex vert
 			#pragma fragment frag
+			#pragma multi_compile _ SHADOWS_SCREEN
 			#pragma multi_compile _ VERTEXLIGHT_ON
 
 			#include "shared.cginc"
