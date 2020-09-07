@@ -62,6 +62,7 @@ float4 applySpecular(PIO o, float4 color)
 		e *= 1 / _SpecularSize;
 		e *= 2;
 		e = max(0, e);
+		e *= attenuation;
 		e *= _Specular;
 		d = max(e, d);
 		lightColor += max(0,ShadeSH9(float4(0, 0, 0, 1)));
