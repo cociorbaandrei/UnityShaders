@@ -10,10 +10,10 @@
 
 
 		[space]
-		_MainTex("Base Layer", 2D) = "black" {}
+		_MainTex("Base Layer", 2D) = "white" {}
 		_Color("Base Color",Color) = (1,1,1,1)
 		_Hue("Hue",Range(-180,180)) = 0
-		_Saturation("Saturation",Range(-1,10)) = 1
+		_Saturation("Saturation",Range(-1,10)) = 0
 		_Value("Value",Range(-1,2)) = 0
 		//hsv should go here.
 
@@ -28,7 +28,7 @@
 		_SpecularSize("Specular Size",Range(.001,1)) = .1
 		_SpecularReflection("Specular Reflection",Range(0,1)) = .5
 		_Smoothness("Smoothness", Range(0,1)) = 0
-		_Reflectiveness("Reflectiveness",Range(0,1)) = 1
+		_Reflectiveness("Reflectiveness",Range(0,1)) = 0
 		_Height("Height",Range(0,1)) = 0
 		_ReflectType("Reflection Type",Int) = 0
 		
