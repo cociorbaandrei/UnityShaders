@@ -11,31 +11,36 @@ float ToonDot(float3 direction, float3 normal, float attenuation)
 	//The inputs on this should not be normalize, because for something with
 	//spherical harmonics, it will be destroyed. If need be, normalize
 	//before passing to this method.
-	//dotal can be from -1 to 1, so do this math to bring it to a range of 0 to 1
-	float d = (dot(direction, normal) + 1) / 2;
+	//the (,1) has to be done to get a proper value. Because we only want the directional brightness, we need to equate it assuming an intensity of 1. Giving us a value of 0 to 2.
+	float d = dot(float4(direction, 1), float4(normal, 1)); //0 to 2.
+	d /= 2; //0 to 1
+	d = saturate(d);
 	d *= attenuation;
-	float m = (dot(direction, normalize(direction)) + 1) / 2;
-	float e = _ShadePivot - d;
+	float e = d - _ShadePivot; //-.5,.5
 	if (_ShadeSoftness > 0) {
 		e *= 1 / _ShadeSoftness;
-		e = saturate(e);
+		e += _ShadePivot;
+		e = saturate(e); //0 to 1.
 	}
 	else {
-		e = saturate(floor(e + 1));
+		e = saturate(floor(e + 1));//0 or 1.
 	}
-#if defined(UNITY_PASS_FORWARDADD)
-	float brightness = 1 - (e * _ShadeRange);
+	float brightness = e;
+#if UNITY_PASS_FORWARDADD
+	//forward add needs a baseline of 0. No range is applied.
+	brightness += _ShadePivot;
 #else
-	float brightness = m - (e * _ShadeRange);
-#endif
-
+	//Range only makes sense in the base pass.
+	brightness *= _ShadeRange;
+	brightness += 1 - _ShadeRange;
 	brightness = max(_ShadeMin, brightness);
 	brightness = min(_ShadeMax, brightness);
+#endif
 
 #if UNITY_COLORSPACE_LINEAR
 	brightness = GammaToLinearSpaceExact(brightness);
 #endif
-	//d = min(_ShadeMax, d);
+	
 	return brightness;
 }
 

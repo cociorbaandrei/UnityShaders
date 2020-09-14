@@ -11,7 +11,7 @@ public class SkuldsAvatarShaderEditor : ShaderGUI
     MaterialEditor materialEditor;
     MaterialProperty[] properties;
     Material material;
-    GUIStyle header;
+    public static GUIStyle header;
 
 
     public override void OnGUI(MaterialEditor materialEditor, MaterialProperty[] properties)
@@ -226,7 +226,7 @@ public class SkuldsAvatarShaderEditor : ShaderGUI
             MaterialProperty min = FindProperty("_ShadeMin", properties);
             materialEditor.RangeProperty(min, "Minimum:");
             MaterialProperty max = FindProperty("_ShadeMax", properties);
-            materialEditor.RangeProperty(max, "Max:");
+            materialEditor.RangeProperty(max, "Maximum:");
             EditorGUILayout.EndVertical();
         }
     }

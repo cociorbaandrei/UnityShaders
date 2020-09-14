@@ -47,11 +47,12 @@ float4 applySpecular(PIO o, float4 color)
 	#else
 		direction = normalize(_WorldSpaceLightPos0.xyz);
 	#endif
-	float d = dot(direction, o.worldNormal.xyz);
+	float d = dot(float4(direction,1), o.worldNormal);
 	d -=1 - _SpecularSize;
 	d *= 1 / _SpecularSize;
 	d *= 2;
 	d = max(0,d);
+	d = min(_ShadeMax, d);
 	d *= attenuation;
 	d *= _Specular;
 	float3 lightColor = _LightColor0.rgb;

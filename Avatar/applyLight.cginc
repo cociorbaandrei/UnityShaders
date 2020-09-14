@@ -2,6 +2,8 @@
 //keep in mind to always add lights. But multiply the sum to the final color. 
 //This method applies ambient light from directional and lightprobes.
 float4 applyLight(PIO process, float4 color) {
+	float4 output = float4(0, 0, 0, 1);
+
 	/************************
 	* Brightness / toon edge:
 	************************/
@@ -11,11 +13,17 @@ float4 applyLight(PIO process, float4 color) {
 #if defined(UNITY_PASS_FORWARDADD)
 	//foward add lighting and details from pixel lights.
 	float3 direction = normalize(_WorldSpaceLightPos0.xyz - process.worldPosition.xyz);
+#if defined(POINT_COOKIE) || defined(SPOT) 
+	//let spotlights just be spotlights.
+	float brightness = dot(direction,process.worldNormal) * attenuation;
+#else
 	float brightness = ToonDot(direction, process.worldNormal, attenuation);
+#endif
 #else
 	//Calculate light probes from foward base.
 	float3 ambientDirection = unity_SHAr.xyz + unity_SHAg.xyz + unity_SHAb.xyz; //do not normalize
-	float brightness = ToonDot(ambientDirection, process.worldNormal.xyz, 1);
+	float brightness = ToonDot(ambientDirection, process.worldNormal.xyz,1 );
+	//brightness = brightness * 2 - 1; //only light probes get a potentionally negative value.
 	//just add the directional light.
 	float directBrightness = ToonDot(normalize(_WorldSpaceLightPos0.xyz), process.worldNormal.xyz, attenuation);
 #endif
@@ -25,34 +33,31 @@ float4 applyLight(PIO process, float4 color) {
 	************************/
 #if defined(UNITY_PASS_FORWARDADD)
 	//get directional color:
-	float3 lightColor = _LightColor0.rgb * brightness * attenuation;
+	float3 lightColor = _LightColor0.rgb * brightness;
+	lightColor *= color.rgb;
+	output.rgb += lightColor;
 #else
-	float3 lightColor;
+	//Keep in mind color is added, and any time it's added it's +(basecolor * light)
 
-	//ambient color (lightprobes):
-	if (!isnan(brightness)) {
-		float3 probeColor = max( 0, ShadeSH9(float4(0, 0, 0, 1) ) );
-		probeColor *= brightness;
-		lightColor = probeColor;
-	}
-	else {
-		lightColor = 1;
-	}
+	//ambient color (lightprobes): 
+	float3 probeColor = ShadeSH9(float4(0, 0, 0, 1));
+	probeColor *= brightness;
+	output.rgb += color.rgb * probeColor;
+	
+	float3 directColor = _LightColor0.rgb;
+	directColor *= directBrightness;
+	directColor *= color.rgb;
+	output.rgb += directColor;
 
-	//direct color
-	if (!isnan(directBrightness)) { //this is because sometimes the direct light breaks and doesn't have an attenuation of 1.0 when it should.
-		float3 directColor = max( 0, _LightColor0.rgb);
-		directColor *= directBrightness;
-		lightColor += directColor;
-	}
-
+	//vertex Lights
 	#ifdef VERTEXLIGHT_ON
-		lightColor += max( 0, process.vcolor);
+		float3 vcolor = process.vcolor * color.rgb;
+		output.rgb += vcolor;
 	#endif
-#endif
-		lightColor *= ( 1 - _Height);
-	//Finally apply shadows and final light color
-	color.rgb *= lightColor;
 
-	return color;
+	//The final blend
+	output.rgb *= (1 - _Height);//height brightness
+#endif
+	output.a = color.a;
+	return output;
 }
