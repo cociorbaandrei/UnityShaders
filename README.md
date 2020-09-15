@@ -14,6 +14,6 @@ A collection of Unity Shaders I wrote and use for various things.
 *The rest*:
 
  Just random stuff I made as experiments and for fun.
-https://github.com/chibiskuld/UnityShaders/releases/download/0.9/SkuldsWorldShader.unitypackage
+ https://github.com/chibiskuld/UnityShaders/releases/download/0.9/SkuldsWorldShader.unitypackage
 
 Releases last updated 9/15/2020
