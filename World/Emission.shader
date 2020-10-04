@@ -70,7 +70,6 @@
 			#include "AutoLight.cginc"
 			#include "Lighting.cginc"
 			#include "UnityPBSLighting.cginc"
-			#include "vertexLights.cginc"
 			#include "Shared.cginc"
 
 			ENDCG

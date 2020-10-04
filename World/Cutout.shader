@@ -71,6 +71,7 @@
 			#pragma multi_compile_fog
 			#pragma multi_compile_instancing
 			#pragma multi_compile_fwdbase
+			#pragma multi_compile _ VERTEXLIGHT_ON
 			/*
 			The problem with GPU Instancing:
 			In your vertex shader, UNITY_VERTEX_INPUT_INSTANCE_ID is declared in your input struct, UNITY_SETUP_INSTANCE_ID is used before accessing any instanced property, and UNITY_TRANSFER_INSTANCED_ID is called in order to feed the fragment shader input.

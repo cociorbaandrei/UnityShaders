@@ -73,6 +73,7 @@
 			#pragma shader_feature _LIGHTPROBES
 			#pragma multi_compile_instancing
 			#pragma multi_compile_fwdbase
+			#pragma multi_compile _ VERTEXLIGHT_ON
 			
 			#include "UnityCG.cginc"
 			#include "AutoLight.cginc"
