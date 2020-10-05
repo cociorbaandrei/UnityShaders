@@ -1,4 +1,4 @@
-﻿Shader "Skuld/Deprecated/Basics 2"
+﻿Shader "Skuld/Deprecated/Basics 2 Emission"
 {
 	Properties
 	{
@@ -10,18 +10,12 @@
 		_Smoothness("Layer 1 Smoothness", Range(0,1)) = 0
 		_Reflectiveness("Layer 1 Reflectiveness",Range(0,1)) = 1
 
-		[Toggle(_DUALTEXTURE)] _DualTexture("====== Dual Texture Mode =====",Float) = 0
+		[Toggle(_EMISSION)] _Emission("====== Emission Mode =====",Float) = 0
 		_Tex2 ("Layer 2 Texture", 2D) = "white" {}
-		[Toggle(_UNLITL2)]_UnlitLayer2 ("Layer 2 Unlit",Float) = 0
-		_SmoothnessL2("Layer 2 Smoothness", Range(0,1)) = 0
-		_ReflectivenessL2("Layer 2 Reflectiveness",Range(0,1)) = 1
-
-		[Toggle(_GLOW)]_GlowLayer2 ("Layer 2 Glow",Float) = 0
-		_GlowSpeed ("Layer 2 Glow Speed",Range(1,1000)) = 1
-		_GlowSpread ("Layer 2 Glow Spread",Range(1,10)) = 1
-		_GlowSharpness("Layer 2 Glow Sharpness",Range(0,1)) = 0
-		_GlowColor ("Layer 2 Glow Color",Color) = (1,1,1,1)
-		[KeywordEnum(X,Y,Z)] _GlowDirection("Layer 2 Glow Direction",Float) = 0
+		_SmoothnessL2("Emission Amount", Range(0,1)) = 0
+		_EPosition("Emission Position",Vector) = (0,0,0,1)
+		_ERange("Emission Range",float) = 20
+		_ESamples("Samples",Vector) = (10,10,0,0)
 
 		[Toggle(_NORMALMAP)] _Normalmap("===== Normalmap =====",Float) = 0
 		[Normal]_NormalTex("Normal Map", 2D) = "black" {}
@@ -58,7 +52,7 @@
 			#pragma fragment frag
 			
 			#pragma multi_compile _MODE_OPAQUE
-			#pragma shader_feature _DUALTEXTURE
+			#pragma shader_feature _EMISSION
 			#pragma shader_feature _UNLITL1 
 			#pragma shader_feature _UNLITL2
 			#pragma shader_feature _GLOW 
@@ -90,7 +84,7 @@
 			#pragma fragment frag
 			// make fog work
 			#pragma multi_compile_local _MODE_OPAQUE
-			#pragma shader_feature _DUALTEXTURE
+			#pragma shader_feature _EMISSION
 			#pragma shader_feature _UNLITL1 
 			#pragma shader_feature _UNLITL2 
 			#pragma shader_feature _GLOW 

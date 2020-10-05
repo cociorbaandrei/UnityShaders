@@ -1,4 +1,7 @@
-﻿#pragma target 3.5
+﻿#include "vertexLights.cginc"
+#pragma target 3.5
+// Upgrade NOTE: excluded shader from DX11; has structs without semantics (struct v2f members _ERange)
+#pragma exclude_renderers d3d11
 #define BINORMAL_PER_FRAGMENT
 
 struct appdata
@@ -30,8 +33,11 @@ struct v2f
 #ifdef _LIGHTMAPPED
 	float2 lmuv : TEXCOORD1;
 #endif
-#ifdef _DUALTEXTURE
+#if defined(_DUALTEXTURE) || defined(_EMISSION)
 	float2 uv2 : TEXCOORD2;
+#endif
+#if defined(VERTEXLIGHT_ON)
+	float3 vcolor : VCOLOR;
 #endif
 };
 
@@ -43,11 +49,16 @@ float _LMBrightness;
 float _TCut;
 float attenuation;
 
-#ifdef _DUALTEXTURE
+#if defined(_DUALTEXTURE) || defined(_EMISSION)
 sampler2D _Tex2;
 float4 _Tex2_ST;
 float _SmoothnessL2;
 float _ReflectivenessL2;
+#endif
+#ifdef _EMISSION
+float4 _EPosition;
+float _ERange;
+float4 _ESamples;
 #endif
 
 //glowy shit
@@ -160,7 +171,7 @@ v2f vert (appdata v)
 	o.normal = v.normal;
 	o.objectPosition = v.position;
 	o.uv = TRANSFORM_TEX(v.uv, _MainTex);
-#ifdef _DUALTEXTURE
+#if defined(_DUALTEXTURE) || defined(_EMISSION)
 	o.uv2 = TRANSFORM_TEX(v.uv, _Tex2);
 #endif
 #ifdef _LIGHTMAPPED
@@ -168,10 +179,19 @@ v2f vert (appdata v)
 #endif
 	o.worldPosition = mul( unity_ObjectToWorld, v.position);
 	o.worldNormal = normalize( UnityObjectToWorldNormal( v.normal ));
-	o.viewDirection = normalize(_WorldSpaceCameraPos.xyz - o.worldPosition);
+	o.viewDirection = normalize(_WorldSpaceCameraPos.xyz - o.worldPosition);//This Should be done in the fragmentation shader. For now pass world pos. But just in case.
 #ifdef _NORMALMAP
 	o.tangent = v.tangent;
 	o.worldTangent = float4(UnityObjectToWorldDir(v.tangent.xyz), v.tangent.w);
+#endif
+
+#ifdef VERTEXLIGHT_ON
+	o.vcolor = Shade4PointLightsFixed(
+		unity_4LightPosX0, unity_4LightPosY0, unity_4LightPosZ0,
+		unity_LightColor[0].rgb, unity_LightColor[1].rgb,
+		unity_LightColor[2].rgb, unity_LightColor[3].rgb,
+		unity_4LightAtten0, o.worldPosition, o.worldNormal
+	);
 #endif
 	return o;
 }
@@ -306,6 +326,7 @@ float4 ApplyGlow(float4 col, inout v2f i ) {
 ************************************************************/
 fixed4 frag (v2f i, uint isFrontFace : SV_IsFrontFace ) : SV_Target
 {
+	i.viewDirection = normalize(_WorldSpaceCameraPos.xyz - i.worldPosition);
 	//base Color:
 	float4 col = tex2D(_MainTex, i.uv);// sample the texture first, to determine cut, to save effort.
 #ifdef _MODE_CUTOUT
@@ -317,15 +338,27 @@ fixed4 frag (v2f i, uint isFrontFace : SV_IsFrontFace ) : SV_Target
 	CalculateLightColor(i, isFrontFace);
 
 	col *= _Color; //apply base color.
-#ifndef _UNLITL1
-	col = ApplyShadows(col, i);//apply shadows
-	col = ApplyLighting(col, i);//applies the calculated lighting
+#if defined(UNITY_PASS_FORWARDBASE)
+//Apply Emissive vertex Lights
+#ifdef VERTEXLIGHT_ON
+	float4 texCol = tex2D(_MainTex, i.uv);
+	float3 vcolor = i.vcolor * texCol.rgb;
+	col.rgb += vcolor;
 #endif
 #ifdef _REFLECTIONS
 	col = ApplyReflectionProbe(col, i, _Smoothness, _Reflectiveness );//applies the reflection probe.
 #endif
+#endif
+
+#ifndef _UNLITL1
+	col = ApplyShadows(col, i);//apply shadows
+	col = ApplyLighting(col, i);//applies the calculated lighting
+#endif
 	col = FinalizeColor(col, i);//applies the final alpha values.
 
+
+
+#if defined(UNITY_PASS_FORWARDBASE)
 	/****************************
 	* Dual Texture (2nd layer)
 	****************************/
@@ -343,8 +376,45 @@ fixed4 frag (v2f i, uint isFrontFace : SV_IsFrontFace ) : SV_Target
 #ifdef _GLOW
 	col2 = ApplyGlow(col2, i);
 #endif
-
 	col = (col * ia) + (col2 * initAlpha2);
+#endif
+
+	//Emission is like a foward add light.
+#ifdef _EMISSION
+	float xstep = 1.0f / _ESamples.x;
+	float ystep = 1.0f / _ESamples.y;
+	float xstart = xstep / 2;
+	float ystart = ystep / 2;
+	
+	float3 ecol = float3(0, 0, 0);
+	for ( float x = xstart; x < 1.0f; x += xstep ) {
+		for ( float y = ystart; y < 1.0f; y += ystep ) {
+			ecol += tex2D(_Tex2, float2(x, y)).rgb;
+		}
+	}
+	ecol /= _ESamples.x * _ESamples.y;
+	ecol *= tex2D(_MainTex, i.uv).rgb;
+	ecol *= _Color;
+	//ecol *= _SmoothnessL2;
+	float4 edir = float4( _EPosition.xyz - i.worldPosition, 1 );
+	float b = dot(i.worldNormal, edir);
+	b /= 2;
+	b += .5f;
+
+	float l = length(i.worldPosition - _EPosition) / 100.0f;
+	float r = _ERange / 100.0f;
+	float a = saturate( (r - l) / r );
+	a *= a;
+
+	ecol.rgb *= b;
+	ecol.rgb *= a;
+	ecol.rgb *= _SmoothnessL2;
+
+	col.rgb += ecol.rgb;
+#endif
+#endif
+#if defined(UNITY_PASS_FORWARDADD)
+	col.rgb *= initAlpha;
 #endif
 
 	return col;
