@@ -11,7 +11,7 @@ public class SkuldsAvatarShaderEditor : ShaderGUI
     MaterialEditor materialEditor;
     MaterialProperty[] properties;
     Material material;
-    public static GUIStyle header;
+    GUIStyle skuldHeader = null;
 
 
     public override void OnGUI(MaterialEditor materialEditor, MaterialProperty[] properties)
@@ -19,13 +19,15 @@ public class SkuldsAvatarShaderEditor : ShaderGUI
         this.materialEditor = materialEditor;
         this.properties = properties;
         this.material = materialEditor.target as Material;
-
-        header = EditorStyles.foldout;
-        header.fontStyle = FontStyle.Bold;
-        header.fontSize = 14;
-        header.normal.textColor = new Color(.25f, 0, .5f);
-        header.margin.bottom = 5;
-        header.margin.top = 5;
+        if (skuldHeader == null)
+        {
+            skuldHeader = EditorStyles.foldout;
+            skuldHeader.fontStyle = FontStyle.Bold;
+            skuldHeader.fontSize = 14;
+            skuldHeader.normal.textColor = new Color(.25f, 0, .5f);
+            skuldHeader.margin.bottom = 5;
+            skuldHeader.margin.top = 5;
+        }
 
         BaseOptions();
         DetailOptions();
@@ -41,7 +43,7 @@ public class SkuldsAvatarShaderEditor : ShaderGUI
     public enum ReflectType { Lerp, Multiply, Add }
     void BRDFOptions()
     {
-        BRDFGroup = EditorGUILayout.Foldout(BRDFGroup, "Features", header);
+        BRDFGroup = EditorGUILayout.Foldout(BRDFGroup, "Features", skuldHeader);
         if (BRDFGroup)
         {
 
@@ -104,7 +106,7 @@ public class SkuldsAvatarShaderEditor : ShaderGUI
     public static Texture2D resultTex;
     void FeatureMapCreator()
     {
-        featureMapGroup = EditorGUILayout.Foldout(featureMapGroup, "Create Feature Map", header);
+        featureMapGroup = EditorGUILayout.Foldout(featureMapGroup, "Create Feature Map", skuldHeader);
         if (featureMapGroup)
         {
             EditorGUILayout.BeginVertical(EditorStyles.textArea);
@@ -172,7 +174,7 @@ public class SkuldsAvatarShaderEditor : ShaderGUI
     bool DetailGroup = false;
     void DetailOptions()
     {
-        DetailGroup = EditorGUILayout.Foldout(DetailGroup, "Detail Layer", header);
+        DetailGroup = EditorGUILayout.Foldout(DetailGroup, "Detail Layer", skuldHeader);
         if (DetailGroup)
         {
             bool enabledDetails = CreateToggleFromProperty("Enabled:", "_DetailLayer");
@@ -213,7 +215,7 @@ public class SkuldsAvatarShaderEditor : ShaderGUI
     bool lightGroup = false;
     void LightOptions()
     {
-        lightGroup = EditorGUILayout.Foldout(lightGroup, "Lighting", header);
+        lightGroup = EditorGUILayout.Foldout(lightGroup, "Lighting", skuldHeader);
         if (lightGroup)
         {
             EditorGUILayout.BeginVertical(EditorStyles.textArea);
@@ -236,7 +238,7 @@ public class SkuldsAvatarShaderEditor : ShaderGUI
     bool baseGroup = false;
     void BaseOptions()
     {
-        baseGroup = EditorGUILayout.Foldout(baseGroup, "Base Texture and Color", header);
+        baseGroup = EditorGUILayout.Foldout(baseGroup, "Base Texture and Color", skuldHeader);
         if (baseGroup)
         {
             EditorGUILayout.BeginVertical(EditorStyles.textArea);
@@ -260,7 +262,7 @@ public class SkuldsAvatarShaderEditor : ShaderGUI
     public enum RenderType { Opaque, Transparent, TransparentCutout, Background, Overlay, TreeOpaque, TreeTransparentCutout, TreeBillboard, Grass, GrassBillboard };
     void RenderOptions()
     {
-        renderGroup = EditorGUILayout.Foldout( renderGroup, "Rendering", header);
+        renderGroup = EditorGUILayout.Foldout( renderGroup, "Rendering", skuldHeader);
         if (renderGroup)
         {
             EditorGUILayout.BeginVertical(EditorStyles.textArea);

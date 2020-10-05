@@ -2,10 +2,10 @@
 {
 	Properties {
 		[space]
-		_ShadeRange("Shade Range",Range(0,1)) = 1.0
-		_ShadeSoftness("Edge Softness", Range(0,1)) = 0
+		_ShadeRange("Shade Range",Range(0,1)) = 0.5
+		_ShadeSoftness("Edge Softness", Range(0,1)) = 0.1
 		_ShadePivot("Center",Range(0,1)) = .5
-		_ShadeMax("Max Brightness", Range(0,2)) = 9999.0
+		_ShadeMax("Max Brightness", Range(0,2)) = 2.0
 		_ShadeMin("Min Brightness",Range(0,1)) = 0.0
 
 

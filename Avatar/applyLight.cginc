@@ -22,7 +22,7 @@ float4 applyLight(PIO process, float4 color) {
 #else
 	//Calculate light probes from foward base.
 	float3 ambientDirection = unity_SHAr.xyz + unity_SHAg.xyz + unity_SHAb.xyz; //do not normalize
-	float brightness = ToonDot(ambientDirection, process.worldNormal.xyz,1 );
+	float brightness = ToonDot(ambientDirection, process.worldNormal.xyz, 1 );
 	//brightness = brightness * 2 - 1; //only light probes get a potentionally negative value.
 	//just add the directional light.
 	float directBrightness = ToonDot(normalize(_WorldSpaceLightPos0.xyz), process.worldNormal.xyz, attenuation);
