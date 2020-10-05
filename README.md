@@ -4,7 +4,7 @@ A collection of Unity Shaders I wrote and use for various things.
 *Avatar*:
 
  The toon shader that I use for just about everything.  
- https://github.com/chibiskuld/UnityShaders/releases/download/0.9/SkuldsAvatarShader.unitypackage
+ https://github.com/chibiskuld/UnityShaders/releases/download/0.9.1/SkuldsAvatarShader.unitypackage
 
 *World*:
 
