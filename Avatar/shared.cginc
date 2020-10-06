@@ -9,6 +9,9 @@ struct IO
 	float2 uv : TEXCOORD0;
 	uint id : SV_VertexID;
 	float4 tangent : TANGENT;
+#if defined(LIGHTMAP_ON)
+	float2 lmuv : TEXCOORD1;
+#endif
 };
 
 //processed IO to be used by submethods
@@ -31,6 +34,9 @@ struct PIO
 	float4 extras : TEXCOORD8;
 #if defined(VERTEXLIGHT_ON)
 	float3 vcolor : VCOLOR;
+#endif
+#if defined(LIGHTMAP_ON)
+	float2 lmuv : TEXCOORD1;
 #endif
 
 #if !defined(UNITY_PASS_SHADOWCASTER)

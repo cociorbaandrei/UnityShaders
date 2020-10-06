@@ -18,6 +18,9 @@ PIO vert( IO v ){
 #if !defined(UNITY_PASS_SHADOWCASTER)
 	TRANSFER_SHADOW(process)
 #endif
+#if defined(LIGHTMAP_ON)
+	process.lmuv = v.lmuv.xy * unity_LightmapST.xy + unity_LightmapST.zw;
+#endif
 
 #ifdef VERTEXLIGHT_ON
 	process.vcolor = Shade4PointLightsFixed(

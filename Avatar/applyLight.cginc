@@ -37,7 +37,12 @@ float4 applyLight(PIO process, float4 color) {
 	lightColor *= color.rgb;
 	output.rgb += lightColor;
 #else
+
 	//Keep in mind color is added, and any time it's added it's +(basecolor * light)
+	//light maps (If they exist)
+#if defined(LIGHTMAP_ON)
+	float3 lightmapCol = DecodeLightmap(UNITY_SAMPLE_TEX2D(unity_Lightmap, process.lmuv));
+#endif
 
 	//ambient color (lightprobes): 
 	float3 probeColor = ShadeSH9(float4(0, 0, 0, 1));

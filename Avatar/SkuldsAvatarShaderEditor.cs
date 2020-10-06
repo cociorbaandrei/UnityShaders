@@ -12,9 +12,22 @@ public class SkuldsAvatarShaderEditor : ShaderGUI
     MaterialProperty[] properties;
     Material material;
     public static GUIStyle header;
-
+    bool initialized = false;
 
     public override void OnGUI(MaterialEditor materialEditor, MaterialProperty[] properties)
+    {
+        if (!initialized) Initialize(materialEditor,properties);
+            
+        BaseOptions();
+        DetailOptions();
+        FeaturesOptions();
+        LightOptions();
+        RenderOptions();
+        FeatureMapCreator();
+    }
+
+    //The gui will only initialize when displayed in the inspector. 
+    void Initialize(MaterialEditor materialEditor, MaterialProperty[] properties)
     {
         this.materialEditor = materialEditor;
         this.properties = properties;
@@ -27,24 +40,18 @@ public class SkuldsAvatarShaderEditor : ShaderGUI
         header.margin.bottom = 5;
         header.margin.top = 5;
 
-        BaseOptions();
-        DetailOptions();
-        BRDFOptions();
-        LightOptions();
-        RenderOptions();
-        FeatureMapCreator();
+        initialized = true;
     }
 
 
 
-    bool BRDFGroup = false;
+    bool FeaturesGroup = false;
     public enum ReflectType { Lerp, Multiply, Add }
-    void BRDFOptions()
+    void FeaturesOptions()
     {
-        BRDFGroup = EditorGUILayout.Foldout(BRDFGroup, "Features", header);
-        if (BRDFGroup)
+        FeaturesGroup = EditorGUILayout.Foldout(FeaturesGroup, "Features", header);
+        if (FeaturesGroup)
         {
-
             //SSRH
             EditorGUILayout.LabelField("Feature Texture Map:", EditorStyles.boldLabel);
             EditorGUILayout.BeginVertical(EditorStyles.textArea);

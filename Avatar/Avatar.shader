@@ -8,7 +8,6 @@
 		_ShadeMax("Max Brightness", Range(0,2)) = 9999.0
 		_ShadeMin("Min Brightness",Range(0,1)) = 0.0
 
-
 		[space]
 		_MainTex("Base Layer", 2D) = "white" {}
 		_Color("Base Color",Color) = (1,1,1,1)
@@ -70,6 +69,8 @@
 
 		Pass {
 			Tags { "LightMode" = "ForwardBase"}
+			Name "Toon Base"
+
 			CGPROGRAM
 			#include "UnityCG.cginc"
 			#include "UnityLightingCommon.cginc"
@@ -81,6 +82,7 @@
 			#pragma fragment frag
 			#pragma multi_compile _ SHADOWS_SCREEN
 			#pragma multi_compile _ VERTEXLIGHT_ON
+			#pragma multi_compile _ LIGHTMAP_ON
 
 			#include "shared.cginc"
 
@@ -89,6 +91,7 @@
 		Pass {
 			Tags { "LightMode" = "ForwardAdd"}
 			Blend One One
+			Name "Toon Add"
 
 			CGPROGRAM
 			#include "UnityCG.cginc"
@@ -109,6 +112,7 @@
 		}
 		Pass {
 			Tags { "LightMode" = "ShadowCaster"}
+			Name "Shadow Caster"
 
 			CGPROGRAM
 			#include "UnityCG.cginc"
