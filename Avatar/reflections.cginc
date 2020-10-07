@@ -22,19 +22,18 @@ float3 cubemapReflection(float3 color, PIO o, float smooth, float ref)
 		}
 
 	//apply the amount the reflective surface is allowed to affect:
-	//result *= ref;
 
 	switch (_ReflectType) {
-	default:
-	case 0:
-		result = lerp(color, result, ref);
-		break;
-	case 1:
-		result = result * color;
-		break;
-	case 2:
-		result = result + color;
-		break;
+		default:
+			case 0:
+				result = lerp(color, result, ref);
+				break;
+			case 1:
+				result = result * color * ref;
+				break;
+			case 2:
+				result = color + ( result * ref );
+				break;
 	}
 	return result;
 }

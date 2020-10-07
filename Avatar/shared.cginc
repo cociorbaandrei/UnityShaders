@@ -24,7 +24,7 @@ struct PIO
 	float2 normalUV : NORMALUV;
 	float2 featureUV : FEATUREUV;
 	float2 uvOffset : PARALLAX;
-	float4 objectPosition : TEXCOORD1; //The position relative to the mesh origin.
+	float4 objectPosition : POSITION2; //The position relative to the mesh origin.
 	float3 worldNormal : TEXCOORD2; //The normal in world space.
 	float3 worldPosition : TEXCOORD3; //the position relative to world origin.
 	float3 viewDirection : TEXCOORD4; //The direction the camera is looking at the mesh.
@@ -45,6 +45,7 @@ struct PIO
 };
 
 int _RenderType;
+float _LMBrightness;
 
 //Base Layer paramters
 sampler2D _MainTex;
@@ -85,6 +86,7 @@ PIO adjustProcess(PIO process, uint isFrontFace)
 #include "vertexLights.cginc"
 #include "HSV.cginc"
 #include "detailLayer.cginc"
+#include "glow.cginc"
 #include "shadows.cginc"
 #include "toon.cginc"
 #include "applyLight.cginc"

@@ -2,11 +2,12 @@
 {
 	Properties {
 		[space]
-		_ShadeRange("Shade Range",Range(0,1)) = 1.0
-		_ShadeSoftness("Edge Softness", Range(0,1)) = 0
+		_ShadeRange("Shade Range",Range(0,1)) = 0.5
+		_ShadeSoftness("Edge Softness", Range(0,1)) = 0.1
 		_ShadePivot("Center",Range(0,1)) = .5
-		_ShadeMax("Max Brightness", Range(0,2)) = 9999.0
+		_ShadeMax("Max Brightness", Range(0,2)) = 2.0
 		_ShadeMin("Min Brightness",Range(0,1)) = 0.0
+		_LMBrightness("Added Lightmap Brightness", Range(-1,1)) = 0
 
 		[space]
 		_MainTex("Base Layer", 2D) = "white" {}
@@ -37,11 +38,16 @@
 		_DetailColor("Detail Color", Color) = (1, 1, 1, 1)
 		_DetailUnlit("Detail Unlit", Int) = 0
 
-		_DetailGlow("Detail Glow", Int) = 0
-		_DetailGlowColor("Glow Color", Color) = (1, 1, 1, 1)
-		_DetailRainbow("Rainbow Effect", Int) = 0
-		_DetailGlowSpeed("Glow Speed",Range(0,10)) = 1
-		_DetailGlowSharpness("Glow Sharpness",Range(1,200)) = 1.0
+		[space]
+		_Glow("Detail Glow", Int) = 0
+		_GlowAmount("Glow Amount",Range(0,1)) = 1
+		_GlowTex("Detail Layer", 2D) = "black" {}
+		_GlowColor("Glow Color", Color) = (1, 1, 1, 1)
+		_GlowSpeed("Glow Speed",float) = 100.0
+		_GlowSqueeze("Glow Squeeze",float) = 10.0
+		_GlowSharpness("Glow Sharpness",float) = 1.0
+		_GlowDirection("Glow Direction",Int) = 4
+		_GlowRainbow("Rainbow Effect", Int) = 0
 
 		_DetailHue("Hue",Range(-180,180)) = 0
 		_DetailSaturation("Saturation",Range(-1,10)) = 1
@@ -49,8 +55,8 @@
 
 		[space]
 		_RenderType("Render Type",Int) = 0
-		[Enum(UnityEngine.Rendering.BlendMode)] _SrcBlend("Source Blend", Int) = 1                 // "One"
-		[Enum(UnityEngine.Rendering.BlendMode)] _DstBlend("Destination Blend", Int) = 0            // "Zero"
+		[Enum(UnityEngine.Rendering.BlendMode)] _SrcBlend("Source Blend", Int) = 5                 // "SourceAlpha"
+		[Enum(UnityEngine.Rendering.BlendMode)] _DstBlend("Destination Blend", Int) = 10            // "OneMinusSourceAlpha"
 		[Enum(UnityEngine.Rendering.CullMode)] _CullMode("Cull Mode", Int) = 2                     // "Back"
 		_ZWrite("Z-Write",Int) = 1
 		_TCut("Transparent Cutout",Range(0,1)) = 1

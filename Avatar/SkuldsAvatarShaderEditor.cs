@@ -11,15 +11,20 @@ public class SkuldsAvatarShaderEditor : ShaderGUI
     MaterialEditor materialEditor;
     MaterialProperty[] properties;
     Material material;
-    public static GUIStyle header;
+    GUIStyle skuldHeader = null;
     bool initialized = false;
 
     public override void OnGUI(MaterialEditor materialEditor, MaterialProperty[] properties)
     {
+        this.materialEditor = materialEditor;
+        this.properties = properties;
+        this.material = materialEditor.target as Material;
+
         if (!initialized) Initialize(materialEditor,properties);
             
         BaseOptions();
         DetailOptions();
+        GlowOptions();
         FeaturesOptions();
         LightOptions();
         RenderOptions();
@@ -29,16 +34,15 @@ public class SkuldsAvatarShaderEditor : ShaderGUI
     //The gui will only initialize when displayed in the inspector. 
     void Initialize(MaterialEditor materialEditor, MaterialProperty[] properties)
     {
-        this.materialEditor = materialEditor;
-        this.properties = properties;
-        this.material = materialEditor.target as Material;
-
-        header = EditorStyles.foldout;
-        header.fontStyle = FontStyle.Bold;
-        header.fontSize = 14;
-        header.normal.textColor = new Color(.25f, 0, .5f);
-        header.margin.bottom = 5;
-        header.margin.top = 5;
+        if (skuldHeader == null)
+        {
+            skuldHeader = EditorStyles.foldout;
+            skuldHeader.fontStyle = FontStyle.Bold;
+            skuldHeader.fontSize = 14;
+            skuldHeader.normal.textColor = new Color(.25f, 0, .5f);
+            skuldHeader.margin.bottom = 5;
+            skuldHeader.margin.top = 5;
+        }
 
         initialized = true;
     }
@@ -49,7 +53,7 @@ public class SkuldsAvatarShaderEditor : ShaderGUI
     public enum ReflectType { Lerp, Multiply, Add }
     void FeaturesOptions()
     {
-        FeaturesGroup = EditorGUILayout.Foldout(FeaturesGroup, "Features", header);
+        FeaturesGroup = EditorGUILayout.Foldout(FeaturesGroup, "Features", skuldHeader);
         if (FeaturesGroup)
         {
             //SSRH
@@ -111,7 +115,7 @@ public class SkuldsAvatarShaderEditor : ShaderGUI
     public static Texture2D resultTex;
     void FeatureMapCreator()
     {
-        featureMapGroup = EditorGUILayout.Foldout(featureMapGroup, "Create Feature Map", header);
+        featureMapGroup = EditorGUILayout.Foldout(featureMapGroup, "Create Feature Map", skuldHeader);
         if (featureMapGroup)
         {
             EditorGUILayout.BeginVertical(EditorStyles.textArea);
@@ -179,7 +183,7 @@ public class SkuldsAvatarShaderEditor : ShaderGUI
     bool DetailGroup = false;
     void DetailOptions()
     {
-        DetailGroup = EditorGUILayout.Foldout(DetailGroup, "Detail Layer", header);
+        DetailGroup = EditorGUILayout.Foldout(DetailGroup, "Detail Layer", skuldHeader);
         if (DetailGroup)
         {
             bool enabledDetails = CreateToggleFromProperty("Enabled:", "_DetailLayer");
@@ -198,31 +202,51 @@ public class SkuldsAvatarShaderEditor : ShaderGUI
                 MaterialProperty value = FindProperty("_DetailValue", properties);
                 materialEditor.RangeProperty(value, "Value:");
                 EditorGUILayout.EndVertical();
-                bool glow = CreateToggleFromProperty("Glow:", "_DetailGlow");
-                if (glow)
-                {
-                    EditorGUILayout.BeginVertical(EditorStyles.textArea);
-                    MaterialProperty glowColor = FindProperty("_DetailGlowColor", properties);
-                    materialEditor.ColorProperty(glowColor, "Color:");
-                    CreateToggleFromProperty("Rainbow Effect:", "_DetailRainbow");
-                    MaterialProperty glowSpeed = FindProperty("_DetailGlowSpeed", properties);
-                    materialEditor.RangeProperty(glowSpeed, "Speed:");
-                    MaterialProperty glowSharpness = FindProperty("_DetailGlowSharpness", properties);
-                    materialEditor.RangeProperty(glowSharpness, "Sharpness:");
-                    EditorGUILayout.EndVertical();
-                }
             }
         }
      }
 
 
 
-    bool lightGroup = false;
+    bool GlowGroup = false;
+    public enum GlowDirection { WorldX, WorldY, WorldZ, UVX, UVY }
+    void GlowOptions()
+    {
+        GlowGroup = EditorGUILayout.Foldout(GlowGroup, "Glow Mask", skuldHeader);
+        if (GlowGroup)
+        {
+            bool glow = CreateToggleFromProperty("Enabled:", "_Glow");
+            if (glow)
+            {
+                EditorGUILayout.BeginVertical(EditorStyles.textArea);
+                MaterialProperty glowAmount = FindProperty("_GlowAmount", properties);
+                materialEditor.RangeProperty(glowAmount, "Glow Amount:");
+                MaterialProperty glowTex = FindProperty("_GlowTex", properties);
+                materialEditor.TextureProperty(glowTex, "Mask:");
+                CreatePopupFromProperty("Glow Direction:", "_GlowDirection", typeof(GlowDirection));
+                MaterialProperty glowColor = FindProperty("_GlowColor", properties);
+                materialEditor.ColorProperty(glowColor, "Color:");
+                CreateToggleFromProperty("Rainbow Effect:", "_GlowRainbow");
+                MaterialProperty glowSpeed = FindProperty("_GlowSpeed", properties);
+                materialEditor.FloatProperty(glowSpeed, "Speed:");
+                MaterialProperty glowSqueeze = FindProperty("_GlowSqueeze", properties);
+                materialEditor.FloatProperty(glowSqueeze, "Squeeze:");
+                MaterialProperty glowSharpness = FindProperty("_GlowSharpness", properties);
+                materialEditor.FloatProperty(glowSharpness, "Sharpness:");
+                EditorGUILayout.EndVertical();
+            }
+        }
+    }
+
+
+        bool lightGroup = false;
     void LightOptions()
     {
-        lightGroup = EditorGUILayout.Foldout(lightGroup, "Lighting", header);
+
+        lightGroup = EditorGUILayout.Foldout(lightGroup, "Lighting", skuldHeader);
         if (lightGroup)
         {
+            EditorGUILayout.LabelField("Non-Static Light Options:", EditorStyles.boldLabel);
             EditorGUILayout.BeginVertical(EditorStyles.textArea);
             MaterialProperty range = FindProperty("_ShadeRange", properties);
             materialEditor.RangeProperty(range, "Range:");
@@ -235,6 +259,12 @@ public class SkuldsAvatarShaderEditor : ShaderGUI
             MaterialProperty max = FindProperty("_ShadeMax", properties);
             materialEditor.RangeProperty(max, "Maximum:");
             EditorGUILayout.EndVertical();
+
+            EditorGUILayout.LabelField("Static Light Options:", EditorStyles.boldLabel);
+            EditorGUILayout.BeginVertical(EditorStyles.textArea);
+            MaterialProperty lmb = FindProperty("_LMBrightness", properties);
+            materialEditor.RangeProperty(lmb, "Light Map Brightness Adjustment:");
+            EditorGUILayout.EndVertical();
         }
     }
 
@@ -243,7 +273,7 @@ public class SkuldsAvatarShaderEditor : ShaderGUI
     bool baseGroup = false;
     void BaseOptions()
     {
-        baseGroup = EditorGUILayout.Foldout(baseGroup, "Base Texture and Color", header);
+        baseGroup = EditorGUILayout.Foldout(baseGroup, "Base Texture and Color", skuldHeader);
         if (baseGroup)
         {
             EditorGUILayout.BeginVertical(EditorStyles.textArea);
@@ -267,7 +297,7 @@ public class SkuldsAvatarShaderEditor : ShaderGUI
     public enum RenderType { Opaque, Transparent, TransparentCutout, Background, Overlay, TreeOpaque, TreeTransparentCutout, TreeBillboard, Grass, GrassBillboard };
     void RenderOptions()
     {
-        renderGroup = EditorGUILayout.Foldout( renderGroup, "Rendering", header);
+        renderGroup = EditorGUILayout.Foldout( renderGroup, "Rendering", skuldHeader);
         if (renderGroup)
         {
             EditorGUILayout.BeginVertical(EditorStyles.textArea);

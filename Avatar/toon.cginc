@@ -15,7 +15,6 @@ float ToonDot(float3 direction, float3 normal, float attenuation)
 	float d = dot(float4(direction, 1), float4(normal, 1)); //0 to 2.
 	d /= 2; //0 to 1
 	d = saturate(d);
-	d *= attenuation;
 	float e = d - _ShadePivot; //-.5,.5
 	if (_ShadeSoftness > 0) {
 		e *= 1 / _ShadeSoftness;
@@ -40,7 +39,11 @@ float ToonDot(float3 direction, float3 normal, float attenuation)
 #if UNITY_COLORSPACE_LINEAR
 	brightness = GammaToLinearSpaceExact(brightness);
 #endif
-	
+	// 10/5/2020:
+	// I had moved this to before the light was calculated, but the problem with that was
+	// It destroyed distance calculation. Attenuation is the offset by distance and shadows.
+	// so it should probably always be applied after, not before.
+	brightness *= attenuation;
 	return brightness;
 }
 

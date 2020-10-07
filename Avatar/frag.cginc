@@ -8,7 +8,6 @@ float4 frag(PIO process, uint isFrontFace : SV_IsFrontFace) : SV_Target
 	float finalAlpha = color.a;
 	color = HSV(color, _Hue, _Saturation, _Value);
 
-
 	if (_NormalScale > 0) {
 		applyNormalMap(process);
 	}
@@ -18,25 +17,41 @@ float4 frag(PIO process, uint isFrontFace : SV_IsFrontFace) : SV_Target
 	}
 
 	process = adjustProcess(process, isFrontFace);
-	color = applyFresnel(process, color);
 
-	//if the mask is set to glow, apply it after lights, else apply it before lightighting it.
 	if (_DetailUnlit) {
-		color = applyLight(process, color);
-		#ifndef UNITY_PASS_FORWARDADD
-			color = applyDetailLayer(process, color);
+		#ifdef UNITY_PASS_FORWARDBASE
 			color = applyReflectionProbe(color, process, _Smoothness, _Reflectiveness);
+
+			color = applyFresnel(process, color);
+			color = applySpecular(process, color);
+			color = applyLight(process, color);
+
+			color = applyDetailLayer(process, color);
+			color = applyGlow(process, color);
+		#else
+			color = applySpecular(process, color);
+			color = applyLight(process, color);
+
+			color = applyDetailLayerForward(process, color);
+			color = applyGlowForward(process, color);
 		#endif
-		color = applySpecular(process, color);
 	}
 	else 
 	{
-		color = applyDetailLayer(process, color);
-		#ifndef UNITY_PASS_FORWARDADD
+		#ifdef UNITY_PASS_FORWARDBASE
 			color = applyReflectionProbe(color, process, _Smoothness, _Reflectiveness);
+			color = applyDetailLayer(process, color);
+			
+			color = applyFresnel(process, color);
+			color = applySpecular(process, color);
+			color = applyLight(process, color);
+
+			color = applyGlow(process, color);
+		#else 
+			color = applySpecular(process, color);
+			color = applyLight(process, color);
+			color = applyGlowForward(process, color);
 		#endif
-		color = applyLight(process, color);
-		color = applySpecular(process, color);
 	}
 
 	color = saturate(color);
