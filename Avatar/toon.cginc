@@ -32,8 +32,6 @@ float ToonDot(float3 direction, float3 normal, float attenuation)
 	//Range only makes sense in the base pass.
 	brightness *= _ShadeRange;
 	brightness += 1 - _ShadeRange;
-	brightness = max(_ShadeMin, brightness);
-	brightness = min(_ShadeMax, brightness);
 #endif
 
 #if UNITY_COLORSPACE_LINEAR
@@ -44,6 +42,7 @@ float ToonDot(float3 direction, float3 normal, float attenuation)
 	// It destroyed distance calculation. Attenuation is the offset by distance and shadows.
 	// so it should probably always be applied after, not before.
 	brightness *= attenuation;
+	brightness = min(_ShadeMax, brightness);//just to help prevent overdrive.
 	return brightness;
 }
 

@@ -62,6 +62,9 @@ float4 applyLight(PIO process, float4 color) {
 			float3 vcolor = process.vcolor * color.rgb;
 			output.rgb += vcolor;
 		#endif
+
+		//minimum Shade Value (forced ambient):
+		output.rgb = lerp(output.rgb, color.rgb, _ShadeMin);
 	#endif
 
 	//The final blend
