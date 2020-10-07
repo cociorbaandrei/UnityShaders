@@ -18,41 +18,26 @@ float4 frag(PIO process, uint isFrontFace : SV_IsFrontFace) : SV_Target
 
 	process = adjustProcess(process, isFrontFace);
 
-	if (_DetailUnlit) {
-		#ifdef UNITY_PASS_FORWARDBASE
-			color = applyReflectionProbe(color, process, _Smoothness, _Reflectiveness);
+	#ifdef UNITY_PASS_FORWARDBASE
+		color = applyReflectionProbe(color, process, _Smoothness, _Reflectiveness);
+		color = applyDetailLayer(process, color, 1-_DetailUnlit);
 
-			color = applyFresnel(process, color);
-			color = applySpecular(process, color);
-			color = applyLight(process, color);
+		color = applyFresnel(process, color);
+		color = applySpecular(process, color);
+		color = applyLight(process, color);
 
-			color = applyDetailLayer(process, color);
-			color = applyGlow(process, color);
-		#else
-			color = applySpecular(process, color);
-			color = applyLight(process, color);
+		color = applyDetailLayer(process, color, _DetailUnlit);
+		color = applyGlow(process, color);
+	#else
+		color = applyReflectionProbe(color, process, _Smoothness, _Reflectiveness);
+		color = applyDetailLayer(process, color, 1 - _DetailUnlit);
 
-			color = applyDetailLayerForward(process, color);
-			color = applyGlowForward(process, color);
-		#endif
-	}
-	else 
-	{
-		#ifdef UNITY_PASS_FORWARDBASE
-			color = applyReflectionProbe(color, process, _Smoothness, _Reflectiveness);
-			color = applyDetailLayer(process, color);
-			
-			color = applyFresnel(process, color);
-			color = applySpecular(process, color);
-			color = applyLight(process, color);
+		color = applySpecular(process, color);
+		color = applyLight(process, color);
 
-			color = applyGlow(process, color);
-		#else 
-			color = applySpecular(process, color);
-			color = applyLight(process, color);
-			color = applyGlowForward(process, color);
-		#endif
-	}
+		color = applyDetailLayerForward(process, color, _DetailUnlit);
+		color = applyGlowForward(process, color);
+	#endif
 
 	color = saturate(color);
 	if (_RenderType == 0) {
