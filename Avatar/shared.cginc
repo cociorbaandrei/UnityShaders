@@ -76,7 +76,8 @@ PIO adjustProcess(PIO process, uint isFrontFace)
 		process.worldNormal = -process.worldNormal;
 	}
 	//get the camera position to calculate view direction and then get the direction from the camera to the pixel.
-	//process.viewDirection = normalize(process.worldPosition - _WorldSpaceCameraPos);
+	//This needs to be done both in vertex and frag shaders.
+	process.viewDirection = normalize(process.worldPosition - _WorldSpaceCameraPos.xyz);
 
 	return process;
 }
