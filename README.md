@@ -1,14 +1,8 @@
 # UnityShaders
-A collection of Unity Shaders I wrote and use for various things.
+
+This is the source code to older versions and experimental versions of my shaders for effects, avatars and worlds. Some of the shaders in this collection are deprecated and should probably not be used. But others are really nice additions. Feel free to use these, or use them as reference for writing your own shaders.
 
 *Avatar* / *World*:
 
-A general all purpose shader, designed to be light weight and usable on mobile devices such as the quest and go.
-
-If you've come here, you are probably looking for this. The repository has been moved!
- The toon shader that I use for just about everything.  
+You probably came here for this, in which case you want to go here:
  https://github.com/chibiskuld/SkuldsShader
-
-*The rest*:
-
- Just random stuff I made as experiments and for fun.  
