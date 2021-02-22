@@ -1,13 +1,14 @@
-﻿Shader "Skuld/Experiments/Neuron Simulator Processor"
+﻿Shader "Skuld/Experiments/Neuron Simulator Processor v2"
 {
     Properties
     {
 		_MainTex("Main Texture", 2D) = "white" {}
 		_Depth("Simulation Depth (match the renderer)",int) = 20
 		_Space("Space Between Spheres (match the renderer)",float) = 1.0
-		_Size("Stimulator Size",float) = .1
 		_TestIndex("Test Index",int) = -1
-
+		_Effect("Rate of Effect",float) = .5
+		_Size("Stimulator/Light Size",float) = .1
+		_Scale("Light Scale",float) = .1
 		[Toggle] _Reset("reset",float) = 0
 	}
 	
@@ -24,7 +25,7 @@
 			#pragma vertex vert
 			#pragma fragment frag
 			// make fog work
-			#pragma multi_compile
+			#pragma multi_compile _ VERTEXLIGHT_ON
 
 			#include "UnityCG.cginc"
 
@@ -47,14 +48,16 @@
 			int _Depth;
 			float _Space;
 			float _Size;
+			float _Effect;
 			int _TestIndex;
 			float speed;
+			float _Scale;
 
 			v2f vert (appdata v)
 			{
 				v2f o;
 				o.uv = TRANSFORM_TEX(v.uv, _MainTex);
-				
+
 				if (any(_ScreenParams.xy != abs(_MainTex_TexelSize.zw))) 
 				{
 					o.vertex = 0;
@@ -70,14 +73,6 @@
 				i += uv.x * _MainTex_TexelSize.z;
 				i -= 31;
 				return i;
-			}
-
-			int clampedIndex(int index) {
-				int dim = _Depth + _Depth + 1;
-				int dim3 = dim * dim * dim;
-				if (index >= dim3) index -= dim3;
-				if (index < 1) index += dim3;
-				return index;
 			}
 
 			float2 getUV(int index) 
@@ -109,60 +104,19 @@
 
 			bool isExcited(float3 pos) {
 				bool excited = false;
+#ifdef VERTEXLIGHT_ON
 				for (int i = 0; i < 4; i++)
 				{
-					if (unity_LightColor[i].w > 1) {
+					if (unity_LightColor[i].w > 0) {
 						float4 lightPos = float4(unity_4LightPosX0[i], unity_4LightPosY0[i], unity_4LightPosZ0[i], 1);
-						float3 objectLightPos = mul(unity_WorldToObject, lightPos).xyz / 10.0f;
+						float3 objectLightPos = mul(unity_WorldToObject, lightPos).xyz *_Scale;
 						if (length(pos - objectLightPos) < _Size) {
 							excited = true;
 						}
 					}
 				}
+#endif
 				return excited;
-			}
-
-
-			fixed4 CheckNeighbor(int index, bool excited, fixed4 col) {
-				index = clampedIndex(index);
-
-				float3 pos = getPosition(index);
-				float2 uv = getUV(index);
-				fixed4 nCol = tex2D(_MainTex, uv);
-				bool nExcited = isExcited(pos);
-
-				if (excited) {
-					if (nExcited) {
-						return col;
-					} else {
-						if (nCol.b > speed) {
-							if (col.b < 1.0f) {
-								col.b += speed;
-								col.r += speed;
-								col.g += speed;
-							}
-						}
-					}
-				}
-				else {
-					if (col.b > nCol.b ) {
-						if (nCol.b < 1.0f) {
-							if (col.b > speed ) {
-								col.b -= speed;
-								col.r -= speed;
-								col.g -= speed;
-							}
-						}
-					}
-					else {
-						if (nCol.b > speed) {
-							if (col.b < 1.0f) {
-								col.b += speed;
-							}
-						}
-					}
-				}
-				return col;
 			}
 
 			fixed4 frag (v2f i) : SV_Target
@@ -182,26 +136,46 @@
 					if (index >= dim) {
 						col.rgb = float3(0,1,1);
 					}
-				} else {
+				} else if ( index > 0 && index <= dim) {
+					float target = .5f;
 					col = saturate(tex2D(_MainTex, i.uv));
 					float3 objectPosition = getPosition(index);
 					bool excited = isExcited(objectPosition);
-					if (excited) {
-						col.g = 1;
-						col.r = 0;
+					int nExcited = 0;
+
+					for (int i = 0; i < dim; i++) {
+						float3 pos = getPosition(i);
+						if (isExcited(pos)) {
+							nExcited++;
+						}
 					}
-					
-					col = CheckNeighbor(index - 1, excited, col);
-					col = CheckNeighbor(index + 1, excited, col);
-					col = CheckNeighbor(index - 11, excited, col);
-					col = CheckNeighbor(index + 11, excited, col);
-					col = CheckNeighbor(index - 121, excited, col);
-					col = CheckNeighbor(index + 121, excited, col);
+					target -= (nExcited * _Effect) / dim;
+					target = saturate(target);
+					//if it's less than 0.0f then the system is shut down and 
+					//chemicles in excited nodes cannot grow any further.
+					if (excited) {
+						if (target > 0.0f) {
+							col.r += speed;
+							col.g += speed;
+							col.b += speed;
+							col = saturate(col);
+						}
+					}
+					else {
+						col.r -= speed;
+						col.g -= speed;
+						if (col.b < target) {
+							col.b += speed;
+						}
+						else {
+							col.b -= speed;
+						}
+					}
 
 					col = saturate(col);
 					if (isnan(col.b)) {
-						col.r = 1;
-						col.b = 0;
+						col.r = 0;
+						col.b = target;
 						col.g = 0;
 					}
 				}

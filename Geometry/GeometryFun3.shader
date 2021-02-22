@@ -21,6 +21,7 @@ Shader "Skuld/Effects/Geometry/Geometry Fun 3 (Replicated and expand)"
 		[Toggle] _ZWrite("Z-Write",Float) = 1
 
 		[space]
+		[hdr] _Color("Color", Color) = (1,1,1,1)
 		_MainTex("Base Layer", 2D) = "black" {}
 		_TCut("Transparent Cutout",Range(0,1)) = 1
 		_FresnelColor("Fresnel Color", Color)=(1, 1, 1, 1)
@@ -57,12 +58,12 @@ Shader "Skuld/Effects/Geometry/Geometry Fun 3 (Replicated and expand)"
 			#pragma target 5.0
 			#pragma vertex vert
 			#pragma geometry geom
-			#pragma fragment frag novertexlights nolighting
+			#pragma fragment frag
 
-			#pragma multi_compile_prepassfinal
+			#pragma multi_compile
 
-			#include "ASDT2/ASDT2.Globals.cginc"
-			#include "ASDT2/ASDT2.FowardBase.cginc"
+			#include "../ASDT2/ASDT2.Globals.cginc"
+			#include "../ASDT2/ASDT2.FowardBase.cginc"
 			
 			float _Step;
 			float _Distance;
@@ -127,11 +128,5 @@ Shader "Skuld/Effects/Geometry/Geometry Fun 3 (Replicated and expand)"
 
 			ENDCG
 		}
-		/*
-			the forward add lights and shadows had to be removed, or else
-			I needed to repeat the geometry manipulation.
-			Which is already expensive as it is, so just dropping it.
-		*/
 	} 
-	//FallBack "Diffuse"
 }
