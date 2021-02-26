@@ -7,14 +7,14 @@ Shader "Skuld/Effects/GPU Particles/Compute"
 {
     Properties
     {
+		_Speed("Speed of Simulation",float) = .1
+		_Strength("Strength of gravity",float) = 1
+		_Reset("reset",range(0,1)) = 0
 		[hdr]_MainTex ("Default Shape", 2D) = "white" {}
 		_Scale("Scale of Default Shape",float) = 100
 		[hdr]_Buffer("Computer Input Texture:",2D) = "Gray" {}
-		_Reset("reset",int) = 0
 		_Vertices("Number of Vertices in Default Shape", int) = 0
-		_Speed("Speed of Simulation",float) = .1
 		_Range("Range of gravity",float) = 10
-		_Strength("Strength of gravity",float) = 1
 		_Decelleration("Rate of Deceleration",float ) = 0
     }
     SubShader
@@ -54,7 +54,7 @@ Shader "Skuld/Effects/GPU Particles/Compute"
 			sampler2D _Buffer;
 			float4 _Buffer_ST;
 			float4 _Buffer_TexelSize;
-			int _Reset;
+			float _Reset;
 			uint _Vertices;
 			float _Speed;
 			float _Range;
@@ -101,9 +101,6 @@ Shader "Skuld/Effects/GPU Particles/Compute"
 				float3 gravity = float4(normalize(float3(0, 0, 0) - position.xyz), 0);
 
 				//determine amount to slow by (Distance from a gravitational source).
-				float4 defaultPos = unity_ObjectToWorld._14_24_34_44;
-				defaultPos.y+=1;
-				trajectory = AddInfluence(defaultPos, position, trajectory);
 #ifdef VERTEXLIGHT_ON
 				for (int i = 0; i < 4; i++)
 				{
@@ -112,50 +109,53 @@ Shader "Skuld/Effects/GPU Particles/Compute"
 						trajectory = AddInfluence(lightPos, position, trajectory);
 					}
 				}
+#else
+				//if vertex lights are on, I want it to shut the fake center point off
+				float4 defaultPos = unity_ObjectToWorld._14_24_34_44;
+				defaultPos.y += 1;
+				trajectory = AddInfluence(defaultPos, position, trajectory);
 #endif
 				//Decelleration
-				trajectory.xyz *= 1 - (_Decelleration * speed);
+				trajectory.xyz *= 1 - (_Decelleration * (unity_DeltaTime.x / 100.0f) );
 				return trajectory;
 			}
 
 			float4 frag (v2f i) : SV_Target
             {
-				float4 col = float4(0,0,0,1);
+				float4 resat = float4(0,0,0,1);
+				//set the initial velocity
 				UNITY_BRANCH
-				if ( _Reset > 0 ){
-					//set the initial velocity
-					UNITY_BRANCH
-					if (i.uv.y > .5f) {
-						col = float4(10, 0, 0, .1f);
-						col.xy = rotate2(col.xy, (_Time.z * 10) + ((i.uv.y * 10) + i.uv.x) * 1666);
-						col.yz = rotate2(col.yz, (_Time.z * 10) + ((i.uv.y * 10) - i.uv.x) * 1666);
-					}
-					else {
-						uint index = UVToIndex(i.uv, _Buffer_TexelSize);
-						index = index % _Vertices;
-						float2 uv = IndexToUV(index, _MainTex_TexelSize);
-						float4 position = tex2D(_MainTex, uv );
-						position *= _Scale;
-						position.z += _Scale/200.0f;
-						position = mul(unity_ObjectToWorld, position);
-						col = position;
-					}
+				if (i.uv.y > .5f) {
+					resat = float4(10, 0, 0, .1f);
+					resat.xy = rotate2(resat.xy, (_Time.z * 10) + ((i.uv.y * 10) + i.uv.x) * 1666);
+					resat.yz = rotate2(resat.yz, (_Time.z * 10) + ((i.uv.y * 10) - i.uv.x) * 1666);
 				}
 				else {
-					//compute direction/velocity change
-					UNITY_BRANCH
-					speed = _Speed * (unity_DeltaTime.x / 100.0f);
-					if (i.uv.y > .5f) {
-						col = CalculateTrajectory(i);
-					}
-					//compute position change.
-					else {
-						float4 position = tex2D(_Buffer, i.uv);
-						float4 trajectory = tex2D(_Buffer, float2(i.uv.x, i.uv.y + .5f));
-						position.xyz += trajectory.xyz * speed;
-						col = position;
-					}
+					uint index = UVToIndex(i.uv, _Buffer_TexelSize);
+					index = index % _Vertices;
+					float2 uv = IndexToUV(index, _MainTex_TexelSize);
+					float4 position = tex2D(_MainTex, uv );
+					position *= _Scale;
+					position.z += _Scale/200.0f;
+					position = mul(unity_ObjectToWorld, position);
+					resat = position;
 				}
+
+				float4 compute = float4(0, 0, 0, 1);
+				speed = _Speed * (unity_DeltaTime.x / 100.0f);
+				UNITY_BRANCH
+				if (i.uv.y > .5f) {
+					compute = CalculateTrajectory(i);
+				}
+				//compute position change.
+				else {
+					float4 position = tex2D(_Buffer, i.uv);
+					float4 trajectory = tex2D(_Buffer, float2(i.uv.x, i.uv.y + .5f));
+					position.xyz += trajectory.xyz * speed;
+					compute = position;
+				}
+				
+				float4 col = lerp(compute, resat, _Reset*_Reset*_Reset);
 
                 return col;
             }
