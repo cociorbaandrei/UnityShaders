@@ -16,7 +16,7 @@ Shader "Skuld/Effects/Ray Marching Fun (Infinisphere)"
 	SubShader {
 		Tags { "RenderType"="TransparentCutout" "Queue"="Transparent-1" }
 		LOD 100
-		Cull Front
+		Cull front
         Blend[_SrcBlend][_DstBlend]
         BlendOp[_BlendOp]
 		
@@ -73,6 +73,9 @@ Shader "Skuld/Effects/Ray Marching Fun (Infinisphere)"
 			{
 				float3 position = frac(inPosition / _Size) * _Size;
 				float3 center;
+				center.z = _Size / 2;
+				center.x = _Size / 2;
+				center.y = _Size / 2;
 				center.z = _Size / 2 + sin(_Time * 20 + inPosition.x * 10) / 50;
 				center.x = _Size / 2 + sin(_Time * 20 + inPosition.z * 10) / 50;
 				center.y = _Size / 2 + cos(_Time * 20 + inPosition.y * 10) / 50;
@@ -115,8 +118,9 @@ Shader "Skuld/Effects/Ray Marching Fun (Infinisphere)"
 			fragOutput frag(v2f input )
 			{
 				fragOutput output;
+				noColor = fixed4(0.0, 0.0, 0.0, 0.0);
 
-				float2 uv = input.uv;
+				float2 uv = input.worldPos.xz / 10.0f;
 				uv[0] = uv[0]+sin(_Time*40);
 				if (uv[0] < 0.0) uv[0]++;
 				if (uv[0] > 1.0) uv[0]--;
@@ -124,23 +128,35 @@ Shader "Skuld/Effects/Ray Marching Fun (Infinisphere)"
 				if (uv[1] < 0.0) uv[1]++;
 				if (uv[1] > 1.0) uv[1]--;
 				
-				float3 position = _WorldSpaceCameraPos;
-				float3 direction = normalize( input.worldPos - _WorldSpaceCameraPos.xyz );
 				
+				float3 direction = normalize( input.worldPos - _WorldSpaceCameraPos.xyz );
+				float s = abs(unity_ObjectToWorld._m00/3);
 				fixed4 color = tex2D(_MainTex, uv);
-				noColor = fixed4(1.0,0.0,0.0,0.0);
+				float d = length(unity_ObjectToWorld._14_24_34_44 - _WorldSpaceCameraPos.xyz);
+				float3 test = _WorldSpaceCameraPos.xyz + d * direction;
+				if (length(unity_ObjectToWorld._14_24_34_44 - test) > s) {
+					output.color = noColor;
+					output.depth = 0;
+					return output;
+				}
+				float3 position = _WorldSpaceCameraPos.xyz;
 
 				for (int i = 0; i < _Steps; i++)
 				{
-					float distance = DE(position,input,i);
-					if (distance <= 0.0001) {
-						output.color = shiftColor( color * saturate(pow(1- i / _Steps, _AmbOcc)), i*10 );
-						float4 clipPos = UnityWorldToClipPos(position);
-						output.depth = clipPos.z / clipPos.w;
-						//output.color = shadeColor( output.color, (clipPos.z * i) / clipPos.w  );
-						return output;
+					if (length(unity_ObjectToWorld._m30_m31_m32 - position) > s) {
+						position += direction * _Size;
 					}
-					position += direction * distance;
+					else {
+						float distance = DE(position, input, i);
+						if (distance <= 0.0001) {
+							output.color = shiftColor(color * saturate(pow(1 - i / _Steps, _AmbOcc)), i * 10 + input.worldPos.y * 100);
+							float4 clipPos = UnityWorldToClipPos(position);
+							output.depth = clipPos.z / clipPos.w;
+							//output.color = shadeColor( output.color, (clipPos.z * i) / clipPos.w  );
+							return output;
+						}
+						position += direction * distance;
+					}
 				}
 				output.color = noColor;
 				output.depth = 0;
