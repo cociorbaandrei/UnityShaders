@@ -61,8 +61,8 @@ Shader "Skuld/Effects/Geometry/Geometry Fun 3 (Replicated and expand)"
 
 			#pragma multi_compile_prepassfinal
 
-			#include "ASDT2/ASDT2.Globals.cginc"
-			#include "ASDT2/ASDT2.FowardBase.cginc"
+			#include "../ASDT2/ASDT2.Globals.cginc"
+			#include "../ASDT2/ASDT2.FowardBase.cginc"
 			
 			float _Step;
 			float _Distance;

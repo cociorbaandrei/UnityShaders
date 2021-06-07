@@ -70,7 +70,7 @@
 			#define MODE_OPAQUE
 
 			#include "ASDT2.Globals.cginc"
-			#include "../../VRChatWorldTimeSource/Shaders/VRChatTimeSource.cginc"
+			#include "../../../VRChatWorldTimeSource/Shaders/VRChatTimeSource.cginc"
 			#include "ASDT2.clock.cginc"
 
 			ENDCG

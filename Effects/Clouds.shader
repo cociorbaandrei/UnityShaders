@@ -7,10 +7,10 @@
 		_Speed ("Cloud Speed", Range(0,10)) = 1
 		_Coverage ("Cloud Coverage", Range(0,1)) = 1
 		[Toggle] _ApplyFog ("Apply Fog", Float) = 1
-		_MainTex1 ("Layer 1", 2D) = "white" {}
-		_MainTex2 ("Layer 2", 2D) = "white" {}
-		_MainTex3 ("Layer 3", 2D) = "white" {}
-		_MainTex4 ("Layer 4", 2D) = "white" {}
+		_MainTex1 ("Layer 1", 2D) = "black" {}
+		_MainTex2 ("Layer 2", 2D) = "black" {}
+		_MainTex3 ("Layer 3", 2D) = "black" {}
+		_MainTex4 ("Layer 4", 2D) = "black" {}
 	}
 	SubShader
 	{
