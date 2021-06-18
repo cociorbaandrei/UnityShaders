@@ -169,10 +169,11 @@ Shader "Skuld/Effects/Ray Marching Fun (Infinisphere)"
 			output.depth = zDepth;
 			*/
 			/*
-			xdir = unity_ObjectToWorld._m00_m01_m02; //left
-			zdir = unity_ObjectToWorld._m10_m11_m12; //front
-			ydir = unity_ObjectToWorld._m20_m21_m22; //bottom
-			center = unity_ObjectToWorld._m30_m31_m32; //bottom
+			/*
+			xdir = unity_ObjectToWorld._m00_m10_m20; //left
+			zdir = unity_ObjectToWorld._m01_m11_m21; //front
+			ydir = unity_ObjectToWorld._m02_m12_m22; //bottom
+			center = unity_ObjectToWorld._m03_m13_m23; //center
 			*/
 			ENDCG
 		}
