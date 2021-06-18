@@ -10,9 +10,12 @@ Shader "Skuld/Effects/Ray Marching/Underwater"
         [hdr]_WColorB("WaterColor A",Color) = (0,1,1,1)
 
 		//spheres (bubbles)
-		_Steps("Iterations",Range(0,1000)) = 100
-		_Size("Grid Size",Range(0,10)) = 1
-		_Radius("Sphere Radius",Range(0,1)) = 0.1
+		_BubbleSteps("Bubble Iterations",Range(0,1000)) = 100
+		_BubbleSize("Bubble Grid Size",Range(0,10)) = 1
+		_BubbleRadius("Bubble Sphere Radius",Range(0,1)) = 0.1
+		_GrassSteps("Grass Iterations",Range(0,1000)) = 100
+		_GrassSize("Grass Grid Size",Range(0,10)) = 1
+		_GrassRadius("Grass Dimensions",Vector) = (1,1,1,1)
 	}
 
 	SubShader {
@@ -56,39 +59,43 @@ Shader "Skuld/Effects/Ray Marching/Underwater"
 				o.uv = TRANSFORM_TEX(v.uv,_MainTex);
 				return o;
 			}
+
 			/*
 			BEGIN SPHERES 
 			*/
-			float _Radius;
-			float _Steps;
-			float _Size;
+			float _BubbleRadius;
+			float _BubbleSteps;
+			float _BubbleSize;
 			struct DEOutPut {
 				float distance;
 				float3 normal;
 			};
-			float sphereDistance(float3 position, float3 center)
-			{
-				return length(position - center) - _Radius;
+
+			float4 ApplyFog(float4 color, float3 position){
+                float4 clipPos = UnityWorldToClipPos(position);
+                float zDepth = clipPos.z / clipPos.w;
+				float f = saturate( zDepth/1.2-.1f );
+				float4 output = lerp(color, float4(0, 0, .05f, 1),f);
+				return output;
 			}
 
-			DEOutPut DE(float3 inPosition, v2f input, float i)
+			float sphereDistance(float3 position, float3 center)
 			{
-				float s2 = _Size / 2.0f;
+				return length(position - center) - _BubbleRadius;
+			}
+
+			DEOutPut DE(float3 inPosition, float i)
+			{
+				float s2 = _BubbleSize / 2.0f;
 				float3 position = inPosition;
 				int2 offset;
-				offset.x = position.x / _Size;
-				offset.y = position.z / _Size;
-				position.y -= _Time.x - sin(offset.x) - cos(offset.y);
-				position.x += sin(offset.y) * _Size;
-				position.z += sin(offset.x) * _Size;
-				//position.y -= _Time.x + sin(inPosition.x)/5;
-				//position.x += sin(inPosition.z*3)/5;
-				//position.z += sin(inPosition.x*4)/5;
-				position = frac(position / _Size) * _Size;
-				float3 center;
-				center.z = _Size / 2;
-				center.x = _Size / 2;
-				center.y = _Size / 2;
+				offset.x = position.x / _BubbleSize;
+				offset.y = position.z / _BubbleSize;
+				position.y -= _Time.x*(offset.x%5 + 2) - sin(offset.x) - cos(offset.y);
+				position.x += sin(offset.y) * _BubbleSize;
+				position.z += sin(offset.x) * _BubbleSize;
+				position = frac(position / _BubbleSize) * _BubbleSize;
+				float3 center = _BubbleSize / 2;
 				float distance = sphereDistance(position, center);
 				
 				DEOutPut output;
@@ -96,51 +103,13 @@ Shader "Skuld/Effects/Ray Marching/Underwater"
 				output.normal = normalize(position-center);
 				return output;
 			}
-			/*
-			END STUFF FOR SPHERES.
-			*/
 
-			float4 frag(v2f input ): SV_Target
-			{
-				float4 output;
-                float4 baseColor;
-                float3 position = _WorldSpaceCameraPos.xyz;
-				float4 center = mul(unity_ObjectToWorld, float4(0, 0, 0, 1.0));
-
-				float3 direction = normalize( input.worldPos - _WorldSpaceCameraPos.xyz );
-				//float4 color = tex2D(_MainTex, input.uv);
-
-                if ( direction.y < 0) {
-                    float xrun = direction.x/-direction.y;
-                    float zrun = direction.z/-direction.y;
-                    //float bottom = mul(unity_ObjectToWorld,float3(0,0,0)).y;
-					float bottom = center.y;
-                    float gdist = position.y - bottom;
-                    position.x += gdist * xrun;
-                    position.z += gdist * zrun;
-                    position.y = bottom;
-					output = tex2D(_MainTex, position.xz/8);
-					float d = sin(position.x * 3 + _Time.y + sin(_Time.y+position.z * 2 + sin(position.x*5-_Time.y)));
-					output.rgb += d*.1f;
-				} else {
-                    position += direction * 1000;
-                    float depth = saturate(input.worldPos.y*_Horizon);
-                    baseColor = lerp(_WColorA,_WColorB,depth);
-    				output = baseColor;
-                }
-				//fog
-                float4 clipPos = UnityWorldToClipPos(position);
-                float zDepth = clipPos.z / clipPos.w;
-				float f = saturate( (1 - zDepth*2)-.1f );
-				output = lerp(output, float4(0, 0, .05f, 1), f);
-
-				//determine Bubble.
+			void MarchBubble(inout float4 color, float3 position, inout float3 direction, inout float zDepth ){
 				float4 bubble = float4(0,0,0,0);
-				position = input.worldPos;
-				for (int i = 0; i < _Steps; i++)
+				for (int i = 0; i < _BubbleSteps; i++)
 				{
-					DEOutPut de = DE(position, input, i);
-					if (de.distance > 0.001) {
+					DEOutPut de = DE(position,  i);
+					if (de.distance > 0.01) {
 						position += direction * de.distance;
 						continue;
 					}
@@ -149,20 +118,108 @@ Shader "Skuld/Effects/Ray Marching/Underwater"
 					}
 					float a = (dot(de.normal, direction)+1);
 					float4 clipPos = UnityWorldToClipPos(position);
-					float zDepth = clipPos.z / clipPos.w;
-					bubble = float4(1, 1, 1, a*zDepth);
-					//float4 clipPos = UnityWorldToClipPos(position);
-					//output.depth = clipPos.z / clipPos.w;
+					float bubbleZDepth = clipPos.z / clipPos.w;
+					
+					bubble = float4(1, 1, 1, a*(bubbleZDepth/10.0f));
+					zDepth = bubbleZDepth;
 					break;	
 				}
-				output = lerp(output, bubble, bubble.a);
+				color = lerp(color, bubble, bubble.a);
+			}
+			/*
+			END STUFF FOR SPHERES.
+			GRASS
+			*/
+			float4 _GrassRadius;
+			float _GrassSteps;
+			float _GrassSize;
+
+			float BoxDistance(float3 position){
+				float3 d = abs(position) - _GrassRadius;
+				float t1 = length(max(d,0));
+				float t2 = max(max(d.x, d.y),d.z);
+				t2 = min(t2, 0);
+				float distance = t1+t2;
+				return distance;
+			}
+			DEOutPut BoxDE(float3 inPosition)
+			{
+				float3 position = inPosition;
+				//why does negative abs here fix this???
+				position.xz = frac(-abs(position.xz) / _GrassSize) * _GrassSize;
+				position.y = -abs(position.y);
+				//center += _GrassSize/2;
+
+				float distance = BoxDistance(position);
+				
+				DEOutPut output;
+				output.distance = distance;
+				output.normal = normalize(position-_GrassRadius);
+
+				return output;
+			}
+			void MarchGrass(inout float4 color, float3 position, inout float3 direction, inout float zDepth ){
+				float4 grass = float4(0,0,0,0);
+				for (int i = 0; i < _GrassSteps; i++)
+				{
+					DEOutPut de = BoxDE(position);
+					if (de.distance > 0.01) {
+						position += direction * de.distance;
+						continue;
+					}
+					if (position.y < 0.01 || position.y > _GrassRadius.y ) {
+						break;
+					}
+					float4 clipPos = UnityWorldToClipPos(position);
+					float grassZDepth = clipPos.z / clipPos.w;
+					grass = float4(0, .5f, 0, 1);
+					grass = ApplyFog(grass,position);
+					zDepth = grassZDepth;
+					break;	
+				}
+				color = lerp(color,grass,grass.a);
+			}
+
+			/*
+			END GRASS
+			*/
+			float4 frag(v2f input ): SV_Target
+			{
+				float4 output;
+                float4 baseColor;
+                float3 position = _WorldSpaceCameraPos.xyz;
+				float3 objBottom = unity_ObjectToWorld._m03_m13_m23;
+				float3 direction = normalize( input.worldPos - _WorldSpaceCameraPos.xyz );
+				float zDepth = 0;
+				//float4 color = tex2D(_MainTex, input.uv);
+
+                if ( direction.y < 0) {
+                    float xrun = direction.x/-direction.y;
+                    float zrun = direction.z/-direction.y;
+					float bottom = objBottom.y;
+                    float gdist = position.y - bottom;
+                    position.x += gdist * xrun;
+                    position.z += gdist * zrun;
+                    position.y = bottom;
+					output = tex2D(_MainTex, position.xz*_MainTex_ST.xy);
+					float d = sin(position.x * 3 + _Time.y + sin(_Time.y+position.z * 2 + sin(position.x*5-_Time.y)));
+					output.rgb += d*.1f;
+				} else {
+                    position += direction * 1000;
+                    float depth = saturate(input.worldPos.y*_Horizon);
+                    baseColor = lerp(_WColorA,_WColorB,depth);
+    				output = baseColor;
+                }
+				output = ApplyFog(output, position);
+
+				MarchGrass(output, input.worldPos.xyz, direction, zDepth);
+				MarchBubble(output, input.worldPos.xyz, direction, zDepth);
 
 				//special layer
 				float4 cube = tex2D(_CubeTex, input.uv);
 				cube.rgb *= .5f;
 				cube.a *= .9f;
 				output = lerp(output, cube, cube.a);
-
 				return output;
 			}
 			ENDCG
