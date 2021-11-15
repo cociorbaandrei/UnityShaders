@@ -13,6 +13,8 @@ Shader "Skuld/Effects/Ray Marching/Underwater"
 		_BubbleSteps("Bubble Iterations",Range(0,1000)) = 100
 		_BubbleSize("Bubble Grid Size",Range(0,10)) = 1
 		_BubbleRadius("Bubble Sphere Radius",Range(0,1)) = 0.1
+		//grass
+		_GrassTex("Grass",2D) = "black" {}
 		_GrassSteps("Grass Iterations",Range(0,1000)) = 100
 		_GrassSize("Grass Grid Size",Range(0,10)) = 1
 		_GrassRadius("Grass Dimensions",Vector) = (1,1,1,1)
@@ -74,7 +76,12 @@ Shader "Skuld/Effects/Ray Marching/Underwater"
 			float4 ApplyFog(float4 color, float3 position){
                 float4 clipPos = UnityWorldToClipPos(position);
                 float zDepth = clipPos.z / clipPos.w;
-				float f = saturate( zDepth/1.2-.1f );
+				#ifdef UNITY_REVERSED_Z
+				zDepth = 1 - zDepth *10-.1f;
+				#else
+				zDepth = zDepth / 1.2 - .1f;
+				#endif
+				float f = saturate( zDepth );
 				float4 output = lerp(color, float4(0, 0, .05f, 1),f);
 				return output;
 			}
@@ -106,6 +113,7 @@ Shader "Skuld/Effects/Ray Marching/Underwater"
 
 			void MarchBubble(inout float4 color, float3 position, inout float3 direction, inout float zDepth ){
 				float4 bubble = float4(0,0,0,0);
+				[loop]
 				for (int i = 0; i < _BubbleSteps; i++)
 				{
 					DEOutPut de = DE(position,  i);
@@ -117,6 +125,7 @@ Shader "Skuld/Effects/Ray Marching/Underwater"
 						break;
 					}
 					float a = (dot(de.normal, direction)+1);
+					a = a / 2 + .5f;
 					float4 clipPos = UnityWorldToClipPos(position);
 					float bubbleZDepth = clipPos.z / clipPos.w;
 					
@@ -133,6 +142,7 @@ Shader "Skuld/Effects/Ray Marching/Underwater"
 			float4 _GrassRadius;
 			float _GrassSteps;
 			float _GrassSize;
+			sampler2D _GrassTex;
 
 			float BoxDistance(float3 position){
 				float3 d = abs(position) - _GrassRadius;
@@ -148,8 +158,7 @@ Shader "Skuld/Effects/Ray Marching/Underwater"
 				//why does negative abs here fix this???
 				position.xz = frac(-abs(position.xz) / _GrassSize) * _GrassSize;
 				position.y = -abs(position.y);
-				//center += _GrassSize/2;
-
+				
 				float distance = BoxDistance(position);
 				
 				DEOutPut output;
@@ -160,6 +169,7 @@ Shader "Skuld/Effects/Ray Marching/Underwater"
 			}
 			void MarchGrass(inout float4 color, float3 position, inout float3 direction, inout float zDepth ){
 				float4 grass = float4(0,0,0,0);
+				[loop]
 				for (int i = 0; i < _GrassSteps; i++)
 				{
 					DEOutPut de = BoxDE(position);
@@ -172,10 +182,15 @@ Shader "Skuld/Effects/Ray Marching/Underwater"
 					}
 					float4 clipPos = UnityWorldToClipPos(position);
 					float grassZDepth = clipPos.z / clipPos.w;
-					grass = float4(0, .5f, 0, 1);
-					grass = ApplyFog(grass,position);
-					zDepth = grassZDepth;
-					break;	
+					float2 uv = 0;
+					uv.x = frac( ( (position.x+position.z) / 2.0f ) / _GrassRadius.x );
+					uv.y = frac( position.y / _GrassRadius.y );
+					grass = tex2D(_GrassTex, uv);
+					if ( grass.a > .01f ) {
+						grass = ApplyFog(grass, position);
+						zDepth = grassZDepth;
+						break;
+					}
 				}
 				color = lerp(color,grass,grass.a);
 			}
